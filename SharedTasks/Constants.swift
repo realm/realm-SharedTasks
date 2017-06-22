@@ -17,7 +17,7 @@ struct Constants {
     static let kDefaultRealmNamePrefskey            = "defaultRealmPreference"
     static let kLoginToMainView                     = "loginToMainViewSegue"
     static let kExitToLoginViewSegue                = "segueToLogin"
-    static let kRealmsToDetailsSegue                = "showRealmDetailSegue"
+    static let kViewToEditSegue                     = "viewToEditSegue"
     
     static let defaultSyncHost                      = "127.0.0.1"
     static let syncRealmPath                        = "SharedTasks"

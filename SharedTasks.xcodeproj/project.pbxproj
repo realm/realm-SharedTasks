@@ -24,6 +24,7 @@
 		8B5864F41EFB422D0032D108 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B5864F21EFB422D0032D108 /* Info.plist */; };
 		8B5864F81EFB423E0032D108 /* AsyncOpenTesterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B5864F61EFB423E0032D108 /* AsyncOpenTesterUITests.swift */; };
 		8B5864F91EFB423E0032D108 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B5864F71EFB423E0032D108 /* Info.plist */; };
+		8B6884F51EFC3A4B005921E5 /* TaskDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6884F41EFC3A4B005921E5 /* TaskDetailsViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +70,7 @@
 		8B5864F21EFB422D0032D108 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8B5864F61EFB423E0032D108 /* AsyncOpenTesterUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncOpenTesterUITests.swift; sourceTree = "<group>"; };
 		8B5864F71EFB423E0032D108 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8B6884F41EFC3A4B005921E5 /* TaskDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskDetailsViewController.swift; sourceTree = "<group>"; };
 		8B9A974C1EE0B2BC00F6C2CA /* SharedTasks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SharedTasks.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B9A97601EE0B2BD00F6C2CA /* SharedTasksTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SharedTasksTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B9A976B1EE0B2BD00F6C2CA /* SharedTasksUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SharedTasksUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -126,6 +128,7 @@
 				8B5864DA1EFB421A0032D108 /* Assets.xcassets */,
 				8B5864DB1EFB421A0032D108 /* LaunchScreen.storyboard */,
 				8B5864DD1EFB421A0032D108 /* Main.storyboard */,
+				8B6884F41EFC3A4B005921E5 /* TaskDetailsViewController.swift */,
 				8B5864DF1EFB421A0032D108 /* Constants.swift */,
 				8B5864E01EFB421A0032D108 /* Info.plist */,
 				8B5864E11EFB421A0032D108 /* Models.swift */,
@@ -477,6 +480,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8B6884F51EFC3A4B005921E5 /* TaskDetailsViewController.swift in Sources */,
 				8B5864E61EFB421A0032D108 /* AppDelegate.swift in Sources */,
 				8B5864EE1EFB421A0032D108 /* RealmUtils.swift in Sources */,
 				8B5864E51EFB421A0032D108 /* AOTesterLoginViewController.swift in Sources */,
