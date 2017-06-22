@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="qcK-Bw-mlU">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Task manager view-->
+        <scene sceneID="HKk-Ud-C19">
+            <objects>
+                <viewController storyboardIdentifier="tasksList" useStoryboardIdentifierAsRestorationIdentifier="YES" id="A16-N8-wkr" userLabel="Task manager view" customClass="TaskManagerViewController" customModule="SharedTasks" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="nZQ-Zc-Kxj"/>
+                        <viewControllerLayoutGuide type="bottom" id="nFm-wd-7Il"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="VN6-6I-Kjd">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Realm Manager" id="pQP-ig-SLm"/>
+                    <navigationItem key="navigationItem" id="4ja-3A-QCU"/>
+                    <connections>
+                        <segue destination="qcK-Bw-mlU" kind="show" identifier="segueToLogin" id="WRv-Ii-v6X"/>
+                        <segue destination="WMq-BR-gVr" kind="show" identifier="viewToEditSegue" id="tfm-ev-T3l"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="isH-Ld-LrN" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2890" y="259"/>
+        </scene>
+        <!--task view/edit controller-->
+        <scene sceneID="l1i-5t-R5N">
+            <objects>
+                <viewController id="WMq-BR-gVr" userLabel="task view/edit controller" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="TIl-vy-Cze"/>
+                        <viewControllerLayoutGuide type="bottom" id="82L-2U-pRn"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="hpd-AB-gaJ">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="6aU-Hw-VwD" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3990" y="259"/>
+        </scene>
+        <!--Realm Details-->
+        <scene sceneID="nMv-KP-m6g">
+            <objects>
+                <viewController storyboardIdentifier="realmDetailView" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Qvh-r7-0hf" userLabel="Realm Details" customClass="RealmDetailsViewController" customModule="SharedTasks" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="h1Z-I2-kfS"/>
+                        <viewControllerLayoutGuide type="bottom" id="uKH-Xl-Qp3"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="bdz-63-bkM">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dbR-kw-39b" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1916" y="1887"/>
+        </scene>
+        <!--Realm Manager-->
+        <scene sceneID="AOJ-C0-ILF">
+            <objects>
+                <navigationController id="JQg-aZ-okQ" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Realm Manager" image="realmManager" id="1up-hZ-R3U"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="w3K-V7-oKc">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="A16-N8-wkr" kind="relationship" relationship="rootViewController" id="tUh-cl-K7w"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="lz6-l8-o7s" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1916" y="259"/>
+        </scene>
+        <!--Tester Login View Controller-->
+        <scene sceneID="ahb-mI-iaF">
+            <objects>
+                <viewController storyboardIdentifier="login" useStoryboardIdentifierAsRestorationIdentifier="YES" id="qcK-Bw-mlU" customClass="AOTesterLoginViewController" customModule="SharedTasks" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="Hmp-vU-FrF"/>
+                        <viewControllerLayoutGuide type="bottom" id="AzR-x9-NMF"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="tbb-GS-0vo">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <connections>
+                        <segue destination="JQg-aZ-okQ" kind="show" identifier="loginToMainViewSegue" id="ZYO-op-6LT"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="gVM-yM-Z2h" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1916" y="-556"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="realmManager" width="31" height="34"/>
+    </resources>
+</document>

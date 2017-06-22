@@ -1,0 +1,7 @@
+  pod 'RealmSwift'
+  pod 'RealmLoginKit'
+  pod 'Fakery'
+  pod 'Eureka'
+  pod 'ImageRow'
+  pod 'Alertift'
+
