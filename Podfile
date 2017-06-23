@@ -12,7 +12,9 @@ target 'SharedTasks' do
   pod 'Eureka'
   pod 'ImageRow'
   pod 'Alertift'
-
+  pod 'PKHUD'
+  
+  
   target 'SharedTasksTests' do
     inherit! :search_paths
     # Pods for testing

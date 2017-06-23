@@ -17,19 +17,20 @@ class TaskDetailsViewController: FormViewController {
     var editMode = false
     var task: Task?
     var targetRealm: Realm?
+    var accessLevel: SyncAccessLevel?
     var targetRecordID: String?     // may be nil of we're creating a new task
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if targetRealm != nil {
+        if targetRealm != nil  {
             if newTaskMode {
                 let leftButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .plain, target: self, action: #selector(self.BackCancelPressed) as Selector?)
                 let rightButton = UIBarButtonItem(title: NSLocalizedString("Save", comment: "Save"), style: .plain, target: self, action: #selector(self.SavePressed))
                 self.navigationItem.leftBarButtonItem = leftButton
                 self.navigationItem.rightBarButtonItem = rightButton
+                self.task = createNewTaskInRealm(targetRealm: targetRealm!)
             }
-
-            
+            form = self.createForm(task: task)
         } else {
             self.showMissingRealmAlert()
         }
@@ -40,6 +41,22 @@ class TaskDetailsViewController: FormViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    
+    
+    
+    func createNewTaskInRealm(targetRealm: Realm) -> Task? {
+        var newTask: Task?
+
+        try! targetRealm.write {
+            let initialValues = [ "id":  UUID().uuidString, "createdBy" : SyncUser.current?.identity! ?? "", "lastUpdatedBy" : SyncUser.current?.identity! ?? "", "creationDate": Date() ] as [String : Any]
+            newTask = targetRealm.create(Task.self, value:initialValues)
+            targetRealm.add(newTask!, update: true)
+        }
+        return newTask
+    }
+    
+    
     
     /*
 
@@ -54,8 +71,8 @@ class TaskDetailsViewController: FormViewController {
     
      */
     func createForm(editable: Bool = false, task: Task?) -> Form {
-        let form =
-            TextRow("Task Title") { row in
+        let form = Form()
+            form +++ TextRow("Task Title") { row in
                 row.tag = "Title"
                 row.value = task?.taskTitle
                 if editable == false {
@@ -70,8 +87,8 @@ class TaskDetailsViewController: FormViewController {
                     row.placeholder = "Task Description"
                     row.textAreaHeight = .dynamic(initialTextViewHeight: 100)
                     row.value = task?.taskDetails
-        }
-         
+                }
+                
                 <<< DateRow(){ [weak self] row in
                     editable == false ? row.disabled = true : ()
                     
@@ -90,7 +107,15 @@ class TaskDetailsViewController: FormViewController {
                             task?.dueDate = row.value
                         }
                     })
+        if self.editMode == true && (self.accessLevel != nil && (self.accessLevel! == .write || self.accessLevel! == .admin)) {
+            form +++ ButtonRow() { row in
+                row.title = NSLocalizedString("Delete Task", comment: "Delete")
+            }.onCellSelection({ (cell, row) in
+                self.confirmDelteTask(sender: self)
+            })
 
+        }
+        
         return form
     }
     
@@ -103,6 +128,27 @@ class TaskDetailsViewController: FormViewController {
 
     
     // MARK: - Actions
+    
+    
+    @IBAction func confirmDelteTask(sender: AnyObject) {
+        let alert = UIAlertController(title: NSLocalizedString("Delete Task Record?", comment: "Delete record"), message: NSLocalizedString("Really Delte this task?", comment: "really really?"), preferredStyle: .alert)
+        
+        let confrimAction = UIAlertAction(title: NSLocalizedString("Delete", comment: "Delete"), style: .default) { (action:UIAlertAction!) in
+            self.performDeleteTask()
+            _ = self.navigationController?.popViewController(animated: true)
+        }
+        alert.addAction(confrimAction)
+        
+        // Cancel button
+        let cancelAction = UIAlertAction(title: "Delete", style: .cancel) { (action:UIAlertAction!) in
+            print("Cancel button tapped");
+        }
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion:nil)
+
+    }
+    
     
     @IBAction func BackCancelPressed(sender: AnyObject) {
         
@@ -121,21 +167,13 @@ class TaskDetailsViewController: FormViewController {
             }
             alert.addAction(cancelAction)
             
-            present(alert, animated: true, completion:nil)  // 11
+            present(alert, animated: true, completion:nil)
         } else {
-            // Here too, since tasks can be "lived edited," -- and we exit the form editor by just pressing "back" in hte cse of an existing task --
-            // if this task has a team assigned, we need to see if this task already exists in the TeamTaskRalm -- where we keep copies of tasks for teams.
-            // if it does, we need either update the existing record, or create a new one if it's not there yet.
-            if self.task!.team != nil {
-                let commonRealm = try! Realm()
-                let team = commonRealm.objects(Team.self).filter(NSPredicate(format: "id = %@", self.task!.team!)).first // get the teams task realm
-                team!.addOrUpdateTask(taskId:self.task!.id)
-            }
-            
+            // since our record can be live edited -- cancel here for exiitn tashs is just "back"
             _ = navigationController?.popViewController(animated: true)
         }
     }
-
+    
     
     
     @IBAction func EditTaskPressed(sender: AnyObject) {
@@ -152,16 +190,26 @@ class TaskDetailsViewController: FormViewController {
         }
     }
 
+    
     @IBAction func SavePressed(sender: AnyObject) {
+        _ = self.navigationController?.popViewController(animated: true)
     }
+
+    
     
     func showMissingRealmAlert() {
-        
+            let alert = UIAlertController(title: NSLocalizedString("Missing Realm", comment: "bad arguments"), message: NSLocalizedString("No Realm passed to us - bailing out!", comment: "bail out"), preferredStyle: .alert)
+            // Cancel button
+            let cancelAction = UIAlertAction(title: "OK", style: .cancel) { (action:UIAlertAction!) in
+                _ = self.navigationController?.popViewController(animated: true)
+            }
+            alert.addAction(cancelAction)
+            present(alert, animated: true, completion:nil)
     }
     
     func performDeleteTask() {        
-        try! self.targetRealm?.write {                   // (Note: this wil be the masterTasksRealm
-            self.targetRealm?.delete(self.task!)         // and finally delete the master task record itself.
+        try! self.targetRealm?.write {
+            self.targetRealm?.delete(self.task!)
         }
         self.task = nil
     }

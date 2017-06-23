@@ -57,7 +57,44 @@ extension UIImage {
 }
 
 
+extension SyncPermissionResults {
+    /// get access level for a given user realm for a specificed path
+    ///
+    /// - Parameters:
+    ///   - userID: the target user identity string
+    ///   - realmPath: the path of the realm
+    /// - Returns: A SyncAccessLevel value
+    func accessLevelForUser(_ userID: String, realmPath: String) -> SyncAccessLevel {
+        var rv: SyncAccessLevel = .none
 
+        for permission in self {
+            if permission.userId == userID && realmPath == permission.path {
+                rv = permission.accessLevel
+            }
+        }
+        return rv
+    }
+}
+
+extension SyncAccessLevel {
+    /// Get human readable string for sync access level
+    ///
+    /// - Returns: Simple description of acces level
+    func toText() -> String {
+        var rv = "No Access"
+        switch (self) {
+        case .none:
+            rv = "No Access"
+        case .read:
+            rv = "Read Only"
+        case .write:
+            rv = "Read/Write"
+        case .admin:
+            rv = "Read/Write/Manage"
+        }
+        return rv
+    }
+}
 
 
 class TaskManagerViewController: FormViewController {
@@ -66,31 +103,46 @@ class TaskManagerViewController: FormViewController {
     var myPersonRecord: Person?
     var people: Results<Person>?
     var tasks: Results<Task>?
+    var myPermissions: SyncPermissionResults?                   // this is a list fo realms the current user has access to - will need to be periodically refreshed
     var myTaskRealm: Realm?                                     // this is mly task realm, kept around since is probably tyhe one we'l use most
     var currentRealm: Realm?                                    // this is the current traget realm - might besomeone else's tasks
     var currentTaskNotificationToken: NotificationToken?        // so we are always looked for changes in the currrent tasks realm
     var peopleNotificationToken: NotificationToken?             // So we get any notifications about peple added to or removed from the syste
-    var permissionNotificationToken : NotificationToken?        // So we can updte our permissions diplay as peple add or remove us from their task lists
     var selectedRealmName: String?                              // the name of the user whose realm we are displaying
 
-    
+    let permissionsDidUpdateNotification = Notification.Name("permissionsDidUpdateNotification")
+
+
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        people = commonRealm.objects(Person.self)   // all the people in the system
+        NotificationCenter.default.addObserver(self, selector: #selector(TaskManagerViewController.reloadUsersSection), name: self.permissionsDidUpdateNotification, object: nil)
+
+        self.getPermissions()
+
+        people = commonRealm.objects(Person.self)       // all the people in the system
         myPersonRecord = people?.filter(NSPredicate(format: "id = %@", SyncUser.current!.identity!)).first
-        openTaskRealmForUser(SyncUser.current!) // start with our own task list.
-        
+        self.navigationItem.title = NSLocalizedString("Shared Tasks Demo", comment: "Shared Tasks Demo")
         self.loadForm()
+
+        
+        // start with our own task list.
+        self.openTasksForUser(SyncUser.current!)
+       
         
     } // of viewDidLoad
     
     
     override func viewWillAppear(_ animated: Bool) {
+
         self.setupTasksNotification()
         self.setupPeopleNotification()
-
         self.tableView.reloadData()
+    }
+    
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self, name: self.permissionsDidUpdateNotification, object: nil);
     }
     
     
@@ -164,20 +216,13 @@ class TaskManagerViewController: FormViewController {
                 }.onCellSelection({ (sectionName, rowName) in
                     self.handleLogoutPressed(sender: self)
                 })
-        
-            <<< ButtonRow(){ row in
-                // need to conditionalize this so if you are on someone else's realm it's indicated
-                row.title = NSLocalizedString("New Task", comment: "")
-                }.onCellSelection({ (sectionName, rowName) in
-                    self.performSegue(withIdentifier: Constants.kViewToEditSegue, sender: self)
-                })
             +++ Section("My Tasks...") { section in
-                section.tag = "TasksSection"
-        }
+                section.tag = "TaskSection"
+                }
         self.reloadTaskSection()
         
         
-        self.form   +++ Section("Users & Permissions") { section in
+        self.form   +++ Section("User Task Lists") { section in
             section.tag = "Users"
         }
         self.reloadUsersSection()
@@ -192,11 +237,15 @@ class TaskManagerViewController: FormViewController {
         if let section = self.form.sectionBy(tag: "TaskSection") {
             if section.count > 0 {
                 section.removeAll()
-                section.header?.title = "..."
-                sectionTitleForUser(currentRealm?.configuration.syncConfiguration?.user,completionHandler: {title in
-                    section.header?.title = title
-                })
-                
+            }
+            //section.header?.title = sectionTitleForUser(currentRealm?.configuration.syncConfiguration?.user)
+            if self.currentRealm != nil {
+                let username = sectionTitleForUser(currentRealm?.configuration.syncConfiguration?.user) ?? "Unknown User"
+                section.header?.title = "\(username)'s Tasks..."
+            } else {
+               section.header?.title = "Tasks"
+            }
+            if self.tasks != nil {
                 for task in self.tasks! {
                     section <<< TextRow(){ row in
                         row.disabled = true
@@ -211,62 +260,81 @@ class TaskManagerViewController: FormViewController {
                     //})
                 } // of tasks loop
             }
+
+            section <<< ButtonRow(){ row in
+                // need to conditionalize this so if you are on someone else's realm it's indicated
+                row.title = NSLocalizedString("Add New Task", comment: "")
+                }.onCellSelection({ (sectionName, rowName) in
+                    self.performSegue(withIdentifier: Constants.kViewToEditSegue, sender: self)
+                })
+            
         }
     }
+    
 
     
     
     func reloadUsersSection() {
+        
+        // we can get called by a notification on the availability of permissions... 
+        // if we're not configured, just skip it.
+        if self.form.isEmpty {
+            return
+        }
+        
         if let section = self.form.sectionBy(tag: "Users") {
-            section.count > 0 ?             section.removeAll() : ()
+            section.count > 0 ? section.removeAll() : ()
             
             for person in self.people!.sorted(byKeyPath: "lastName") {
                 section <<< TextRow(){ row in
                     row.disabled = true
                     row.tag = person.id
-                    }.cellSetup({ (cell, row) in
+                    }
+                    .cellUpdate({ (cell, row) in
+                        cell.textLabel?.adjustsFontSizeToFitWidth = true
+
                         if person.id == SyncUser.current?.identity! {
-                            // do something to higligh our own record
-                            row.title = "\(person.fullName()) ← you!"
-                            cell.backgroundColor = .green
-                            cell.alpha = 0.5
+                            row.title = "\(person.fullName()) ← you!"   // do something to higligh our own record
                             row.disabled = true
                         } else {
-                            row.title = person.fullName()
+                            if let accessLevel =  self.myPermissions?.accessLevelForUser(person.id, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id)) {
+                                print("Access level is \(accessLevel.toText())")
+                                row.title = "\(person.fullName()) (\(accessLevel.toText()))"
+                                (accessLevel != .write || accessLevel != .write) ?  row.disabled = true : ()
+                            } else {
+                                // if we can't determine the permission level, then it's assumed to be .none
+                                print("self.myPermissions was nil - cannot determine Access level.")
+                                row.disabled = true
+                                row.title = "\(person.fullName())"
+                            }
                         }
-                        //row.cell.accessoryType = .disclosureIndicator
+                        
+                        // lastly, see if the putative path of the person we're looking at is the same as our path.. if so, it's us, so put a check on the row
+                        if Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: (SyncUser.current?.identity!)!) == Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id) {
+                            row.cell.accessoryType = .checkmark
+                        } else {
+                            row.cell.accessoryType = .none
+                        }
                     })
                     .onCellSelection({ (cell, row) in
                         print("tap on cell body for \(person.fullName())")
                         //self.performSegue(withIdentifier: Constants.kRealmsToDetailsSegue, sender: self)
                     })
             } // of tasks loop
-            
-            
-        }
-    }
+        } // of section != nil
+    } // of reloadUsersSection
     
     
     /// get title for section based on curent user
     ///
     /// - Parameter user: A SyncUser
     /// - Returns: A string prepresenting the current user and hte read/write status
-    func sectionTitleForUser(_ user:SyncUser?, completionHandler: @escaping (String?) -> Void) {
-        
-        SyncUser.current?.retrievePermissions { permissions, error in
-            if let permissions = permissions {
-                let targetPersonRecord = self.commonRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", (user?.identity)!)).first
-                completionHandler("\(String(describing: targetPersonRecord?.fullName()))")
-            } else {
-                if let error = error {
-                    // handle error
-                    completionHandler(nil)
-                }
-                
-            }
-        }
+    func sectionTitleForUser(_ user:SyncUser?) ->String? {
+        let targetPersonRecord = self.commonRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", (user?.identity)!)).first
+        return targetPersonRecord?.fullName()
     }
-        
+    
+    
     
     
     
@@ -294,21 +362,66 @@ class TaskManagerViewController: FormViewController {
     
     
     // MARK: - Realm Access
-    func openTaskRealmForUser(_ user:SyncUser) {
+//    func openTaskRealmForUser(_ user:SyncUser) {
+//        let config = privateTasksRealmConfigforUser(user: user)
+//        
+//        Realm.asyncOpen(configuration: config) { realm, error in
+//            if let realm = realm {
+//                self.currentRealm = realm
+//                self.tasks = try! self.currentRealm?.objects(Task.self)
+//            } else  if let error = error {
+//                print("Error opening \(config), error: \(error.localizedDescription)")
+//            }
+//        } // of AsyncOpen
+//    }
+    
+    
+    
+    
+    func openTasksForUser(_ user: SyncUser) {
+        openTaskRealmForUser(user) { (realm, error) in
+            if let realm = realm {
+                self.currentRealm = realm
+                self.tasks = try! self.currentRealm?.objects(Task.self)
+                self.setupTasksNotification()
+                self.reloadTaskSection()
+            } else {
+                if let error = error {
+                    print("An error occurred opening Realm for ID \(user.identity!): \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+
+    func openTaskRealmForUser(_ user:SyncUser, completionHandler:@escaping(Realm?,Error?) -> Void) {
         let config = privateTasksRealmConfigforUser(user: user)
         
         Realm.asyncOpen(configuration: config) { realm, error in
             if let realm = realm {
                 self.currentRealm = realm
-                self.tasks = try! self.currentRealm?.objects(Task.self)
-                self.reloadTaskSection()
             } else  if let error = error {
                 print("Error opening \(config), error: \(error.localizedDescription)")
             }
+            completionHandler(realm, error)
         } // of AsyncOpen
-
-        
     }
+
+    
+    func getPermissions() {
+        SyncUser.current?.retrievePermissions { permissions, error in
+            if let error = error {
+                print("Error retreiving permissions: \(error.localizedDescription)")
+                return
+            }
+            self.myPermissions = permissions
+            NotificationCenter.default.post(name: self.permissionsDidUpdateNotification, object: nil)
+        }
+    }
+    
+    
+    
+
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -329,29 +442,29 @@ class TaskManagerViewController: FormViewController {
     func setupTasksNotification() {
         self.currentTaskNotificationToken =  self.tasks?.addNotificationBlock { (changes: RealmCollectionChange) in
             guard let tableView = self.tableView else { return }
+            let section = self.form.sectionBy(tag: "TaskSection")
+
             switch changes {
-//            case .initial:
-//                // Results are now populated and can be accessed without blocking the UI
-//                tableView.reloadData()
-//                break
-//            case .update(_, let deletions, let insertions, let modifications):
-//                // Query results have changed, so apply them to the UITableView
-//                tableView.beginUpdates()
-//                tableView.insertRows(at: insertions.map({ IndexPath(row: $0, section: 0) }),
-//                                     with: .automatic)
-//                tableView.deleteRows(at: deletions.map({ IndexPath(row: $0, section: 0)}),
-//                                     with: .automatic)
-//                tableView.reloadRows(at: modifications.map({ IndexPath(row: $0, section: 0) }),
-//                                     with: .automatic)
-//                tableView.endUpdates()
-//                break
+            case .initial:
+                // Results are now populated and can be accessed without blocking the UI
+                section?.reload() // this forces Eureka to reload
+                break
+            case .update(_, let deletions, let insertions, let modifications):
+                // Query results have changed, so apply them to the UITableView
+                tableView.beginUpdates()
+                tableView.insertRows(at: insertions.map({ IndexPath(row: $0, section: section!.index!) }),
+                                     with: .automatic)
+                tableView.deleteRows(at: deletions.map({ IndexPath(row: $0, section: section!.index!)}),
+                                     with: .automatic)
+                tableView.reloadRows(at: modifications.map({ IndexPath(row: $0, section: section!.index!) }),
+                                     with: .automatic)
+                tableView.endUpdates()
+                section?.reload() // this forces Eureka to reload
+                break
             case .error(let error):
                 // An error occurred while opening the Realm file on the background worker thread
                 fatalError("\(error)")
                 break
-                
-            default:
-                tableView.reloadData()
             }
         } // of notificationToken
     } // setupTasksNotification
@@ -359,31 +472,32 @@ class TaskManagerViewController: FormViewController {
 
     
     func setupPeopleNotification() {
+
         self.peopleNotificationToken =  self.people?.addNotificationBlock { (changes: RealmCollectionChange) in
             guard let tableView = self.tableView else { return }
+            let section = self.form.sectionBy(tag: "Users")
+
             switch changes {
-//            case .initial:
-//                // Results are now populated and can be accessed without blocking the UI
-//                tableView.reloadData()
-//                break
-//            case .update(_, let deletions, let insertions, let modifications):
-//                // Query results have changed, so apply them to the UITableView
-//                tableView.beginUpdates()
-//                tableView.insertRows(at: insertions.map({ IndexPath(row: $0, section: 0) }),
-//                                     with: .automatic)
-//                tableView.deleteRows(at: deletions.map({ IndexPath(row: $0, section: 0)}),
-//                                     with: .automatic)
-//                tableView.reloadRows(at: modifications.map({ IndexPath(row: $0, section: 0) }),
-//                                     with: .automatic)
-//                tableView.endUpdates()
-//                break
+            case .initial:
+                // Results are now populated and can be accessed without blocking the UI
+                section?.reload() // this forces Eureka to reload
+                break
+            case .update(_, let deletions, let insertions, let modifications):
+                // Query results have changed, so apply them to the UITableView
+                tableView.beginUpdates()
+                tableView.insertRows(at: insertions.map({ IndexPath(row: $0, section: section!.index!) }),
+                                     with: .automatic)
+                tableView.deleteRows(at: deletions.map({ IndexPath(row: $0, section: section!.index!)}),
+                                     with: .automatic)
+                tableView.reloadRows(at: modifications.map({ IndexPath(row: $0, section: section!.index!) }),
+                                     with: .automatic)
+                tableView.endUpdates()
+                section?.reload() // this forces Eureka to reload
+                break
             case .error(let error):
                 // An error occurred while opening the Realm file on the background worker thread
                 fatalError("\(error)")
                 break
-                
-            default:
-                tableView.reloadData()
             }
         } // of notificationToken
     } // setupTasksNotification

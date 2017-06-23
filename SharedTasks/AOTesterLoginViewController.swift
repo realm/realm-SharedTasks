@@ -44,15 +44,14 @@ class AOTesterLoginViewController: UIViewController {
             loginViewController.loginSuccessfulHandler = { user in
                 DispatchQueue.main.async {
                     
-                    if user.isAdmin == true {
-                        // this will make it so non-Admins can log in and see the index realm (and set their own profile record)
-                        self.setupDefaultGlobalPermissions(user: user)
-                    }
-                    
-                    if self.useAsyncOpen == true {
                         Realm.asyncOpen(configuration: commonRealmConfig(user:SyncUser.current!)) { realm, error in
                             if let realm = realm {
                                 
+                                if SyncUser.current?.isAdmin == true { // set the common realm so all users can read/write it
+                                    self.setPermissionForRealm(realm, accessLevel: .write, personID: "*" )  // we, as an admin are granting global read/write to the common realm
+                                }
+                                
+
                                 Realm.Configuration.defaultConfiguration = commonRealmConfig(user:SyncUser.current!)
                                 self.thePersonRecord = Person.createProfile()
                                 
@@ -66,17 +65,6 @@ class AOTesterLoginViewController: UIViewController {
                                 print("Error on return from AsyncOpen(): \(error)")
                             }
                         } // of asyncOpen()
-                    } else {
-                        let realm = try! Realm(configuration:commonRealmConfig(user:SyncUser.current!))
-                        Realm.Configuration.defaultConfiguration = commonRealmConfig(user:SyncUser.current!)
-                        self.thePersonRecord = Person.createProfile()
-                        
-                        // then dismiss the login view, and...
-                        self.loginViewController!.dismiss(animated: true, completion: nil)
-                        
-                        // hop right into the main view for the app
-                        self.performSegue(withIdentifier: Constants.kLoginToMainView, sender: nil)
-                    }
                     
                 } // of main queue dispatch
             }// of login controller
@@ -92,39 +80,24 @@ class AOTesterLoginViewController: UIViewController {
     
 
     
-    
-    func setupDefaultGlobalPermissions(user: SyncUser?) {
-        
-        let managementRealm = try! user!.managementRealm()
-        let theURL = Constants.commonRealmURL.absoluteString
-        
-        let permissionChange = SyncPermissionChange(realmURL: theURL,    // The remote Realm URL on which to apply the changes
-            userID: "*",       // The user ID for which these permission changes should be applied
-            mayRead: true,     // Grant read access
-            mayWrite: true,    // Grant write access
-            mayManage: false)  // Grant management access
-        
-        token = managementRealm.objects(SyncPermissionChange.self).filter("id = %@", permissionChange.id).addNotificationBlock { notification in
-            if case .update(let changes, _, _, _) = notification, let change = changes.first {
-                // Object Server processed the permission change operation
-                switch change.status {
-                case .notProcessed:
-                    print("not processed.")
-                case .success:
-                    print("succeeded.")
-                case .error:
-                    print("Error.")
+    func setPermissionForRealm(_ realm: Realm?, accessLevel: SyncAccessLevel, personID: String) {
+        if let realm = realm {
+            let permission = SyncPermissionValue(realmPath: realm.configuration.syncConfiguration!.realmURL.path,  // The remote Realm path on which to apply the changes
+                userID: personID,           // The user ID for which these permission changes should be applied, or "*" for wildcard
+                accessLevel: accessLevel)   // The access level to be granted
+            SyncUser.current?.applyPermission(permission) { error in
+                if let error = error {
+                    print("Error when attempting to set permissions: \(error.localizedDescription)")
+                    return
+                } else {
+                    print("Permissions successfully set")
                 }
-                print("change notification: \(change.debugDescription)")
             }
-        }
-        
-        try! managementRealm.write {
-            print("Launching permission change request id: \(permissionChange.id)")
-            managementRealm.add(permissionChange)
         }
     }
 
+    
+    
     /*
     // MARK: - Navigation
 
