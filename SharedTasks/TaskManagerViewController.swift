@@ -257,7 +257,7 @@ class TaskManagerViewController: FormViewController {
                         })
                         .onCellSelection({ (cell, row) in
                             let dict = ["taskID": row.tag]
-                            self.performSegue(withIdentifier: Constants.kViewToEditSegue, sender: dict)
+                            self.performSegue(withIdentifier: Constants.kViewtoDetailsSegue, sender: dict)
                         })
                 } // of tasks loop
             }
@@ -278,7 +278,7 @@ class TaskManagerViewController: FormViewController {
     func reloadUsersSection() {
         
         // we can get called by a notification on the availability of permissions...
-        // if we're not configured, just skip it.
+        // if we're not yet configured, just skip it.
         if self.form.isEmpty {
             return
         }
@@ -295,7 +295,7 @@ class TaskManagerViewController: FormViewController {
                         cell.textLabel?.adjustsFontSizeToFitWidth = true
                         
                         if person.id == SyncUser.current?.identity! {
-                            row.title = "\(person.fullName()) ← you!"   // do something to higligh our own record
+                            row.title = "\(person.fullName()) ← you!"   // do something to higlight our own record
                             row.disabled = true
                         } else {
                             if let accessLevel =  self.myPermissions?.accessLevelForUser(person.id, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id)) {
