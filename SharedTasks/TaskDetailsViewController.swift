@@ -31,15 +31,13 @@ class TaskDetailsViewController: FormViewController {
                 self.navigationItem.rightBarButtonItem = rightButton
                 self.task = createNewTaskInRealm(targetRealm: targetRealm!)
             } else {
-                if self.targetRealm != nil && self.taskID != nil {
+                if self.targetRealm != nil && self.taskID != nil && hasEditAccess() == true {
                     self.task = targetRealm?.objects(Task.self).filter(NSPredicate(format: "id = %@", self.taskID!)).first
-                    // Now, let see if there shld be an edit button here.
-                    if self.accessLevel != nil && (self.accessLevel! == .write && self.accessLevel! == .admin ) {
-                        let leftButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .plain, target: self, action: #selector(self.BackCancelPressed) as Selector?)
-                        let rightButton = UIBarButtonItem(title: NSLocalizedString("Edit", comment: "Edit"), style: .plain, target: self, action: #selector(self.toggleEditMode))
-                        self.navigationItem.leftBarButtonItem = leftButton
-                        self.navigationItem.rightBarButtonItem = rightButton
-                    }
+                    let leftButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .plain, target: self, action: #selector(self.BackCancelPressed) as Selector?)
+                    let rightButton = UIBarButtonItem(title: NSLocalizedString("Edit", comment: "Edit"), style: .plain, target: self, action: #selector(self.toggleEditMode))
+                    self.navigationItem.leftBarButtonItem = leftButton
+                    self.navigationItem.rightBarButtonItem = rightButton
+                    
                 }
             }
             form = self.createForm(editable: self.newTaskMode, task: task)
@@ -53,6 +51,16 @@ class TaskDetailsViewController: FormViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    
+    
+    func hasEditAccess() -> Bool {
+        if self.accessLevel != nil && (self.accessLevel! == .write || self.accessLevel! == .admin ) {
+            return true
+        }
+        return false
+    }
+    
     
     
     func toggleEditMode() {
