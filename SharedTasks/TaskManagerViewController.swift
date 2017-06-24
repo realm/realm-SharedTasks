@@ -256,7 +256,9 @@ class TaskManagerViewController: FormViewController {
                             //row.cell.accessoryType = .disclosureIndicator
                         })
                         .onCellSelection({ (cell, row) in
-                            let dict = ["taskID": row.tag]
+                            let personId = self.currentRealm?.configuration.syncConfiguration?.user.identity!
+                            let accessLevel =  self.myPermissions?.accessLevelForUser(personId!, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: personId!))
+                            let dict = ["taskID": row.tag!, "accessLevel": accessLevel!] as [String : Any]
                             self.performSegue(withIdentifier: Constants.kViewtoDetailsSegue, sender: dict)
                         })
                 } // of tasks loop
@@ -266,7 +268,7 @@ class TaskManagerViewController: FormViewController {
                 // need to conditionalize this so if you are on someone else's realm it's indicated
                 row.title = NSLocalizedString("Add New Task", comment: "")
                 }.onCellSelection({ (sectionName, rowName) in
-                    self.performSegue(withIdentifier: Constants.kViewToEditSegue, sender: self)
+                    self.performSegue(withIdentifier: Constants.kViewToNewTaskSegue, sender: self)
                 })
             
         }
@@ -277,8 +279,7 @@ class TaskManagerViewController: FormViewController {
     
     func reloadUsersSection() {
         
-        // we can get called by a notification on the availability of permissions...
-        // if we're not yet configured, just skip it.
+        // we can get called by a notification on the availability of permissions... if we're not yet configured, just skip it.
         if self.form.isEmpty {
             return
         }
@@ -299,12 +300,12 @@ class TaskManagerViewController: FormViewController {
                             row.disabled = true
                         } else {
                             if let accessLevel =  self.myPermissions?.accessLevelForUser(person.id, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id)) {
-                                print("Access level is \(accessLevel.toText())")
+                                //print("Access level is \(accessLevel.toText())")
                                 row.title = "\(person.fullName()) (\(accessLevel.toText()))"
                                 (accessLevel != .write || accessLevel != .write) ?  row.disabled = true : ()
                             } else {
                                 // if we can't determine the permission level, then it's assumed to be .none
-                                print("self.myPermissions was nil - cannot determine Access level.")
+                                //print("self.myPermissions was nil - cannot determine Access level.")
                                 row.disabled = true
                                 row.title = "\(person.fullName())"
                             }
@@ -415,7 +416,7 @@ class TaskManagerViewController: FormViewController {
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == Constants.kViewToEditSegue {
+        if segue.identifier == Constants.kViewToNewTaskSegue {
             let vc = segue.destination as! TaskDetailsViewController
             vc.newTaskMode = true
             vc.targetRealm = self.currentRealm
@@ -426,14 +427,19 @@ class TaskManagerViewController: FormViewController {
         
         if segue.identifier == Constants.kViewtoDetailsSegue {
             var taskID: String?
-            if sender != nil {
-                let dict = sender as! Dictionary<String, String>
-                taskID = dict["taskID"]
-            }
+            var accessLevel: SyncAccessLevel?
             let vc = segue.destination as! TaskDetailsViewController
+
+            if sender != nil {
+                let dict = sender as! Dictionary<String, Any>
+                taskID = (dict["taskID"] as! String)
+                accessLevel = (dict["accessLevel"] as! SyncAccessLevel)
+                
+                vc.taskID = taskID
+                vc.accessLevel = accessLevel
+            }
             vc.newTaskMode = false
             vc.targetRealm = self.currentRealm
-            vc.taskID = taskID
             self.peopleNotificationToken?.stop()
             self.currentTaskNotificationToken?.stop()
         }

@@ -17,7 +17,7 @@ struct Constants {
     static let kDefaultRealmNamePrefskey            = "defaultRealmPreference"
     static let kLoginToMainView                     = "loginToMainViewSegue"
     static let kExitToLoginViewSegue                = "segueToLogin"
-    static let kViewToEditSegue                     = "viewToEditSegue"
+    static let kViewToNewTaskSegue                  = "viewToNewTaskSegue"
     static let kViewtoDetailsSegue                  = "viewtoDetailsSegue"
     
     

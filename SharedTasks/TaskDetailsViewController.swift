@@ -33,6 +33,13 @@ class TaskDetailsViewController: FormViewController {
             } else {
                 if self.targetRealm != nil && self.taskID != nil {
                     self.task = targetRealm?.objects(Task.self).filter(NSPredicate(format: "id = %@", self.taskID!)).first
+                    // Now, let see if there shld be an edit button here.
+                    if self.accessLevel != nil && (self.accessLevel! == .write && self.accessLevel! == .admin ) {
+                        let leftButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel"), style: .plain, target: self, action: #selector(self.BackCancelPressed) as Selector?)
+                        let rightButton = UIBarButtonItem(title: NSLocalizedString("Edit", comment: "Edit"), style: .plain, target: self, action: #selector(self.toggleEditMode))
+                        self.navigationItem.leftBarButtonItem = leftButton
+                        self.navigationItem.rightBarButtonItem = rightButton
+                    }
                 }
             }
             form = self.createForm(editable: self.newTaskMode, task: task)
@@ -48,7 +55,13 @@ class TaskDetailsViewController: FormViewController {
     }
     
     
-    
+    func toggleEditMode() {
+        self.editMode = true
+        self.navigationItem.leftBarButtonItem = nil
+        let rightButton = UIBarButtonItem(title: NSLocalizedString("Done", comment: "Done"), style: .plain, target: self, action: #selector(self.SavePressed))
+        self.navigationItem.rightBarButtonItem = rightButton
+        self.form = createForm(editable: true, task: task)
+    }
     
     func createNewTaskInRealm(targetRealm: Realm) -> Task? {
         var newTask: Task?

@@ -26,7 +26,8 @@
                     <navigationItem key="navigationItem" id="4ja-3A-QCU"/>
                     <connections>
                         <segue destination="qcK-Bw-mlU" kind="show" identifier="segueToLogin" id="WRv-Ii-v6X"/>
-                        <segue destination="WMq-BR-gVr" kind="show" identifier="viewToEditSegue" id="tfm-ev-T3l"/>
+                        <segue destination="WMq-BR-gVr" kind="show" identifier="viewToNewTaskSegue" id="tfm-ev-T3l"/>
+                        <segue destination="WMq-BR-gVr" kind="show" identifier="viewtoDetailsSegue" id="3QI-gi-Njt"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="isH-Ld-LrN" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -111,4 +112,7 @@
     <resources>
         <image name="realmManager" width="31" height="34"/>
     </resources>
+    <inferredMetricsTieBreakers>
+        <segue reference="3QI-gi-Njt"/>
+    </inferredMetricsTieBreakers>
 </document>
