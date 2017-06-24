@@ -43,17 +43,17 @@ class PermissionsViewController: FormViewController {
                     <<< ButtonRow() { row in
                         row.title = NSLocalizedString("Clear Permissions", comment: "Clear")
                         }.onCellSelection({ (cell, row) in
-                            setPermissionForRealmPath(Constants.myTasksRealmURL.relativePath, accessLevel: .none, personID: person.id)
+                            setPermissionForRealmPath(Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: SyncUser.current!.identity!), accessLevel: .none, personID: person.id)
                         })
                     <<< ButtonRow() { row in
                         row.title = NSLocalizedString("Set Read Only", comment: "Clear")
                         }.onCellSelection({ (cell, row) in
-                            setPermissionForRealmPath(Constants.myTasksRealmURL.relativePath, accessLevel: .read, personID: person.id)
+                            setPermissionForRealmPath(Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: SyncUser.current!.identity!), accessLevel: .read, personID: person.id)
                         })
                     <<< ButtonRow() { row in
                         row.title = NSLocalizedString("Set Read/Write", comment: "Clear")
                         }.onCellSelection({ (cell, row) in
-                            setPermissionForRealmPath(Constants.myTasksRealmURL.relativePath, accessLevel: .write, personID: person.id)
+                            setPermissionForRealmPath(Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: SyncUser.current!.identity!), accessLevel: .write, personID: person.id)
                         })
             }
         } // of people loop

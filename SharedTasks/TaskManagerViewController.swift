@@ -151,6 +151,7 @@ class TaskManagerViewController: FormViewController {
         self.setupPeopleNotification()
         self.setupTasksNotification()
         self.reloadTaskSection()
+        self.reloadUsersSection()
     }
     
     
