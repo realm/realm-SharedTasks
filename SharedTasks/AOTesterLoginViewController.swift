@@ -15,15 +15,15 @@ class AOTesterLoginViewController: UIViewController {
     var token: NotificationToken!
     var myIdentity = SyncUser.current?.identity!
     var thePersonRecord: Person?
-
+    
     let useAsyncOpen = false
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Do any additional setup after loading the view.
     }
-
+    
     
     override func viewDidAppear(_ animated: Bool) {
         loginViewController = LoginViewController(style: .lightOpaque)
@@ -44,27 +44,34 @@ class AOTesterLoginViewController: UIViewController {
             loginViewController.loginSuccessfulHandler = { user in
                 DispatchQueue.main.async {
                     
-                        Realm.asyncOpen(configuration: commonRealmConfig(user:SyncUser.current!)) { realm, error in
-                            if let realm = realm {
-                                
-                                if SyncUser.current?.isAdmin == true { // set the common realm so all users can read/write it
-                                    self.setPermissionForRealm(realm, accessLevel: .write, personID: "*" )  // we, as an admin are granting global read/write to the common realm
-                                }
-                                
-
-                                Realm.Configuration.defaultConfiguration = commonRealmConfig(user:SyncUser.current!)
-                                self.thePersonRecord = Person.createProfile()
-                                
-                                // then dismiss the login view, and...
-                                self.loginViewController!.dismiss(animated: true, completion: nil)
-                                
-                                // hop right into the main view for the app
-                                self.performSegue(withIdentifier: Constants.kLoginToMainView, sender: nil)
-                                
-                            } else if let error = error {
-                                print("Error on return from AsyncOpen(): \(error)")
+                    Realm.asyncOpen(configuration: commonRealmConfig(user:SyncUser.current!)) { realm, error in
+                        if let realm = realm {
+                            
+                            if SyncUser.current?.isAdmin == true { // set the common realm so all users can read/write it
+                                self.setPermissionForRealm(realm, accessLevel: .write, personID: "*" )  // we, as an admin are granting global read/write to the common realm
                             }
-                        } // of asyncOpen()
+                            
+                            
+                            Realm.Configuration.defaultConfiguration = commonRealmConfig(user:SyncUser.current!)
+                            let commonRealm =  try! Realm()
+                            if let profileRecord = commonRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", SyncUser.current!.identity!)).first {
+                                try! commonRealm.write {
+                                    profileRecord.lastSeenDate = Date()
+                                }
+                            } else {
+                                self.thePersonRecord = Person.createProfile()
+                            }
+                            
+                            // then dismiss the login view, and...
+                            self.loginViewController!.dismiss(animated: true, completion: nil)
+                            
+                            // hop right into the main view for the app
+                            self.performSegue(withIdentifier: Constants.kLoginToMainView, sender: nil)
+                            
+                        } else if let error = error {
+                            print("Error on return from AsyncOpen(): \(error)")
+                        }
+                    } // of asyncOpen()
                     
                 } // of main queue dispatch
             }// of login controller
@@ -72,13 +79,13 @@ class AOTesterLoginViewController: UIViewController {
             present(loginViewController, animated: true, completion: nil)
         }
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-
+    
     
     func setPermissionForRealm(_ realm: Realm?, accessLevel: SyncAccessLevel, personID: String) {
         if let realm = realm {
@@ -95,17 +102,17 @@ class AOTesterLoginViewController: UIViewController {
             }
         }
     }
-
+    
     
     
     /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+     // MARK: - Navigation
+     
+     // In a storyboard-based application, you will often want to do a little preparation before navigation
+     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+     // Get the new view controller using segue.destinationViewController.
+     // Pass the selected object to the new view controller.
+     }
+     */
+    
 }
