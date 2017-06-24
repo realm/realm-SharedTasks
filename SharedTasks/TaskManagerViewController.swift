@@ -14,6 +14,22 @@ import Eureka
 import ImageRow
 import Alertift
 
+extension UIColor {
+    
+    class func fromHex(hexString: String, alpha : Float = 1.0) -> UIColor {
+        var newColor = UIColor.clear // this compensates for a bug in Swift2.x
+        let scan = Scanner(string: hexString)
+        var hexValue : UInt32 = 0
+        if scan.scanHexInt32(&hexValue) {
+            let r : CGFloat = CGFloat( hexValue >> 16 & 0x0ff) / 255.0
+            let g : CGFloat = CGFloat( hexValue >> 8 & 0x0ff) / 255.0
+            let b : CGFloat = CGFloat( hexValue      & 0x0ff) / 255.0
+            newColor = UIColor(red: r , green: g,	blue:  b , alpha: CGFloat(alpha))
+        }
+        
+        return newColor
+    }
+}
 extension UIImage {
     /// resize image to fit current frame
     ///
@@ -86,11 +102,11 @@ extension SyncAccessLevel {
         case .none:
             rv = "No Access"
         case .read:
-            rv = "Read Only"
+            rv = "Read Only Access"
         case .write:
-            rv = "Read/Write"
+            rv = "Read/Write Access"
         case .admin:
-            rv = "Read/Write/Manage"
+            rv = "Read/Write/Manage Access"
         }
         return rv
     }
@@ -117,9 +133,7 @@ class TaskManagerViewController: FormViewController {
         
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(TaskManagerViewController.reloadUsersSection), name: self.permissionsDidUpdateNotification, object: nil)
-        
         self.getPermissions()
-        
         people = commonRealm.objects(Person.self)       // all the people in the system
         myPersonRecord = people?.filter(NSPredicate(format: "id = %@", SyncUser.current!.identity!)).first
         self.navigationItem.title = NSLocalizedString("Shared Tasks Demo", comment: "Shared Tasks Demo")
@@ -129,11 +143,11 @@ class TaskManagerViewController: FormViewController {
         // start with our own task list.
         self.openTasksForUser(SyncUser.current!)
         
-        
     } // of viewDidLoad
     
     
     override func viewWillAppear(_ animated: Bool) {
+        self.getPermissions()
         self.setupPeopleNotification()
         self.setupTasksNotification()
         self.reloadTaskSection()
@@ -213,6 +227,11 @@ class TaskManagerViewController: FormViewController {
             
             +++ Section("App Actions")
             <<< ButtonRow(){ row in
+                row.title = NSLocalizedString("Set Permissions on My Tasks...", comment: "")
+                }.onCellSelection({ (sectionName, rowName) in
+                    self.showPermissionSelector()
+                })
+            <<< ButtonRow(){ row in
                 row.title = NSLocalizedString("Logout", comment: "")
                 }.onCellSelection({ (sectionName, rowName) in
                     self.handleLogoutPressed(sender: self)
@@ -223,7 +242,7 @@ class TaskManagerViewController: FormViewController {
         self.reloadTaskSection()
         
         
-        self.form   +++ Section("User Task Lists") { section in
+        self.form   +++ Section("User Task Lists - Tap to Switch Lists") { section in
             section.tag = "Users"
         }
         self.reloadUsersSection()
@@ -253,7 +272,6 @@ class TaskManagerViewController: FormViewController {
                         row.tag = task.id
                         }.cellSetup({ (cell, row) in
                             row.title = task.taskTitle
-                            //row.cell.accessoryType = .disclosureIndicator
                         })
                         .onCellSelection({ (cell, row) in
                             let personId = self.currentRealm?.configuration.syncConfiguration?.user.identity!
@@ -291,8 +309,7 @@ class TaskManagerViewController: FormViewController {
                 section <<< TextRow(){ row in
                     row.disabled = true
                     row.tag = person.id
-                    }
-                    .cellUpdate({ (cell, row) in
+                    }.cellUpdate({ (cell, row) in
                         cell.textLabel?.adjustsFontSizeToFitWidth = true
                         
                         if person.id == SyncUser.current?.identity! {
@@ -302,7 +319,11 @@ class TaskManagerViewController: FormViewController {
                             if let accessLevel =  self.myPermissions?.accessLevelForUser(person.id, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id)) {
                                 //print("Access level is \(accessLevel.toText())")
                                 row.title = "\(person.fullName()) (\(accessLevel.toText()))"
-                                (accessLevel != .write || accessLevel != .write) ?  row.disabled = true : ()
+                                if (accessLevel == .write || accessLevel == .write) {
+                                    row.disabled = false
+                                } else {
+                                    row.disabled = true
+                                }
                             } else {
                                 // if we can't determine the permission level, then it's assumed to be .none
                                 //print("self.myPermissions was nil - cannot determine Access level.")
@@ -313,16 +334,22 @@ class TaskManagerViewController: FormViewController {
                         
                         // lastly, see if the putative path of the person we're looking at is the same as our path.. if so, it's us, so put a check on the row
                         if Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: (SyncUser.current?.identity!)!) == Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id) {
-                            row.cell.accessoryType = .checkmark
+                            //row.cell.accessoryType = .checkmark
+                            cell.backgroundColor = UIColor.fromHex(hexString: "5190f8", alpha: 0.1)
                         } else {
-                            row.cell.accessoryType = .none
+                            //row.cell.accessoryType = .none
+                            cell.backgroundColor = .white
                         }
                     })
                     .onCellSelection({ (cell, row) in
                         print("tap on cell body for \(person.fullName())")
                         //self.performSegue(withIdentifier: Constants.kRealmsToDetailsSegue, sender: self)
+                    }).onChange({ (row) in
+                        print("tap on cell UITableViewCellAccessoryType for \(person.fullName())")
                     })
-            } // of tasks loop
+                
+                
+            } // of people loop
         } // of section != nil
     } // of reloadUsersSection
     
@@ -338,6 +365,10 @@ class TaskManagerViewController: FormViewController {
     
     
     
+    func showPermissionSelector() {
+        // do something cool here
+        performSegue(withIdentifier: Constants.kMainToPermissionsSegue, sender: self)
+    }
     
     
     @IBAction func handleLogoutPressed(sender: AnyObject) {
@@ -405,7 +436,8 @@ class TaskManagerViewController: FormViewController {
                 return
             }
             self.myPermissions = permissions
-            NotificationCenter.default.post(name: self.permissionsDidUpdateNotification, object: nil)
+            //NotificationCenter.default.post(name: self.permissionsDidUpdateNotification, object: nil)
+            self.reloadUsersSection()
         }
     }
     
@@ -429,7 +461,7 @@ class TaskManagerViewController: FormViewController {
             var taskID: String?
             var accessLevel: SyncAccessLevel?
             let vc = segue.destination as! TaskDetailsViewController
-
+            
             if sender != nil {
                 let dict = sender as! Dictionary<String, Any>
                 taskID = (dict["taskID"] as! String)
@@ -442,6 +474,10 @@ class TaskManagerViewController: FormViewController {
             vc.targetRealm = self.currentRealm
             self.peopleNotificationToken?.stop()
             self.currentTaskNotificationToken?.stop()
+        }
+        
+        if segue.identifier == Constants.kMainToPermissionsSegue {
+            
         }
         
     }

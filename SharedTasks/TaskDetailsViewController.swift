@@ -99,6 +99,7 @@ class TaskDetailsViewController: FormViewController {
     func createForm(editable: Bool = false, task: Task?) -> Form {
         let form = Form()
         form +++ TextRow("Task Title") { row in
+            row.title = "Title"
             row.tag = "Title"
             row.value = task?.taskTitle
             if editable == false {
@@ -114,6 +115,7 @@ class TaskDetailsViewController: FormViewController {
             
             <<< TextAreaRow(){ row in
                 editable == false ? row.disabled = true : ()
+                row.title = "Description"
                 row.tag = "Description"
                 row.placeholder = "Task Description"
                 row.textAreaHeight = .dynamic(initialTextViewHeight: 100)
@@ -126,7 +128,6 @@ class TaskDetailsViewController: FormViewController {
             
             <<< DateRow(){ [weak self] row in
                 editable == false ? row.disabled = true : ()
-                
                 row.title = "Due Date"
                 row.value = Date()
                 let formatter = DateFormatter()

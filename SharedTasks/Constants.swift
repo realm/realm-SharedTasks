@@ -19,7 +19,7 @@ struct Constants {
     static let kExitToLoginViewSegue                = "segueToLogin"
     static let kViewToNewTaskSegue                  = "viewToNewTaskSegue"
     static let kViewtoDetailsSegue                  = "viewtoDetailsSegue"
-    
+    static let kMainToPermissionsSegue              = "mainToPermissionsSegue"
     
     static let defaultSyncHost                      = "127.0.0.1"
     static let syncRealmPath                        = "SharedTasks"
