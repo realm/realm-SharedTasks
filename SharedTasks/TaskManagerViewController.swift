@@ -66,7 +66,7 @@ extension SyncPermissionResults {
     /// - Returns: A SyncAccessLevel value
     func accessLevelForUser(_ userID: String, realmPath: String) -> SyncAccessLevel {
         var rv: SyncAccessLevel = .none
-
+        
         for permission in self {
             if permission.userId == userID && realmPath == permission.path {
                 rv = permission.accessLevel
@@ -109,35 +109,34 @@ class TaskManagerViewController: FormViewController {
     var currentTaskNotificationToken: NotificationToken?        // so we are always looked for changes in the currrent tasks realm
     var peopleNotificationToken: NotificationToken?             // So we get any notifications about peple added to or removed from the syste
     var selectedRealmName: String?                              // the name of the user whose realm we are displaying
-
+    
     let permissionsDidUpdateNotification = Notification.Name("permissionsDidUpdateNotification")
-
-
+    
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(TaskManagerViewController.reloadUsersSection), name: self.permissionsDidUpdateNotification, object: nil)
-
+        
         self.getPermissions()
-
+        
         people = commonRealm.objects(Person.self)       // all the people in the system
         myPersonRecord = people?.filter(NSPredicate(format: "id = %@", SyncUser.current!.identity!)).first
         self.navigationItem.title = NSLocalizedString("Shared Tasks Demo", comment: "Shared Tasks Demo")
         self.loadForm()
-
+        
         
         // start with our own task list.
         self.openTasksForUser(SyncUser.current!)
-       
+        
         
     } // of viewDidLoad
     
     
     override func viewWillAppear(_ animated: Bool) {
-
-        self.setupTasksNotification()
         self.setupPeopleNotification()
-        self.tableView.reloadData()
+        self.setupTasksNotification()
+        self.reloadTaskSection()
     }
     
     
@@ -152,6 +151,8 @@ class TaskManagerViewController: FormViewController {
     }
     
     
+    
+    // MARK: - Form & Form Section Management
     func loadForm() {
         form
             +++ Section("Your Profile Info")
@@ -218,7 +219,7 @@ class TaskManagerViewController: FormViewController {
                 })
             +++ Section("My Tasks...") { section in
                 section.tag = "TaskSection"
-                }
+        }
         self.reloadTaskSection()
         
         
@@ -243,7 +244,7 @@ class TaskManagerViewController: FormViewController {
                 let username = sectionTitleForUser(currentRealm?.configuration.syncConfiguration?.user) ?? "Unknown User"
                 section.header?.title = "\(username)'s Tasks..."
             } else {
-               section.header?.title = "Tasks"
+                section.header?.title = "Tasks"
             }
             if self.tasks != nil {
                 for task in self.tasks! {
@@ -254,13 +255,13 @@ class TaskManagerViewController: FormViewController {
                             row.title = task.taskTitle
                             //row.cell.accessoryType = .disclosureIndicator
                         })
-                    //.onCellSelection({ (cell, row) in
-                    //    self.selectedRealmName = row.tag!
-                    //    self.performSegue(withIdentifier: Constants.kRealmsToDetailsSegue, sender: self)
-                    //})
+                        .onCellSelection({ (cell, row) in
+                            let dict = ["taskID": row.tag]
+                            self.performSegue(withIdentifier: Constants.kViewToEditSegue, sender: dict)
+                        })
                 } // of tasks loop
             }
-
+            
             section <<< ButtonRow(){ row in
                 // need to conditionalize this so if you are on someone else's realm it's indicated
                 row.title = NSLocalizedString("Add New Task", comment: "")
@@ -271,12 +272,12 @@ class TaskManagerViewController: FormViewController {
         }
     }
     
-
+    
     
     
     func reloadUsersSection() {
         
-        // we can get called by a notification on the availability of permissions... 
+        // we can get called by a notification on the availability of permissions...
         // if we're not configured, just skip it.
         if self.form.isEmpty {
             return
@@ -292,7 +293,7 @@ class TaskManagerViewController: FormViewController {
                     }
                     .cellUpdate({ (cell, row) in
                         cell.textLabel?.adjustsFontSizeToFitWidth = true
-
+                        
                         if person.id == SyncUser.current?.identity! {
                             row.title = "\(person.fullName()) ← you!"   // do something to higligh our own record
                             row.disabled = true
@@ -361,22 +362,7 @@ class TaskManagerViewController: FormViewController {
     }
     
     
-    // MARK: - Realm Access
-//    func openTaskRealmForUser(_ user:SyncUser) {
-//        let config = privateTasksRealmConfigforUser(user: user)
-//        
-//        Realm.asyncOpen(configuration: config) { realm, error in
-//            if let realm = realm {
-//                self.currentRealm = realm
-//                self.tasks = try! self.currentRealm?.objects(Task.self)
-//            } else  if let error = error {
-//                print("Error opening \(config), error: \(error.localizedDescription)")
-//            }
-//        } // of AsyncOpen
-//    }
-    
-    
-    
+    // MARK: - Realm Access Methods
     
     func openTasksForUser(_ user: SyncUser) {
         openTaskRealmForUser(user) { (realm, error) in
@@ -393,7 +379,7 @@ class TaskManagerViewController: FormViewController {
         }
     }
     
-
+    
     func openTaskRealmForUser(_ user:SyncUser, completionHandler:@escaping(Realm?,Error?) -> Void) {
         let config = privateTasksRealmConfigforUser(user: user)
         
@@ -406,7 +392,10 @@ class TaskManagerViewController: FormViewController {
             completionHandler(realm, error)
         } // of AsyncOpen
     }
-
+    
+    
+    
+    // MARK: - Permission Hadling
     
     func getPermissions() {
         SyncUser.current?.retrievePermissions { permissions, error in
@@ -421,19 +410,34 @@ class TaskManagerViewController: FormViewController {
     
     
     
-
+    
     // MARK: - Navigation
     
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == Constants.kViewToEditSegue {
-        
             let vc = segue.destination as! TaskDetailsViewController
             vc.newTaskMode = true
             vc.targetRealm = self.currentRealm
             self.peopleNotificationToken?.stop()
             self.currentTaskNotificationToken?.stop()
         }
+        
+        
+        if segue.identifier == Constants.kViewtoDetailsSegue {
+            var taskID: String?
+            if sender != nil {
+                let dict = sender as! Dictionary<String, String>
+                taskID = dict["taskID"]
+            }
+            let vc = segue.destination as! TaskDetailsViewController
+            vc.newTaskMode = false
+            vc.targetRealm = self.currentRealm
+            vc.taskID = taskID
+            self.peopleNotificationToken?.stop()
+            self.currentTaskNotificationToken?.stop()
+        }
+        
     }
     
     
@@ -443,7 +447,7 @@ class TaskManagerViewController: FormViewController {
         self.currentTaskNotificationToken =  self.tasks?.addNotificationBlock { (changes: RealmCollectionChange) in
             guard let tableView = self.tableView else { return }
             let section = self.form.sectionBy(tag: "TaskSection")
-
+            
             switch changes {
             case .initial:
                 // Results are now populated and can be accessed without blocking the UI
@@ -469,14 +473,14 @@ class TaskManagerViewController: FormViewController {
         } // of notificationToken
     } // setupTasksNotification
     
-
+    
     
     func setupPeopleNotification() {
-
+        
         self.peopleNotificationToken =  self.people?.addNotificationBlock { (changes: RealmCollectionChange) in
             guard let tableView = self.tableView else { return }
             let section = self.form.sectionBy(tag: "Users")
-
+            
             switch changes {
             case .initial:
                 // Results are now populated and can be accessed without blocking the UI
@@ -501,7 +505,7 @@ class TaskManagerViewController: FormViewController {
             }
         } // of notificationToken
     } // setupTasksNotification
-
+    
     
 }
 

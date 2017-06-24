@@ -16,6 +16,7 @@ class TaskDetailsViewController: FormViewController {
     var newTaskMode = false
     var editMode = false
     var task: Task?
+    var taskID: String?
     var targetRealm: Realm?
     var accessLevel: SyncAccessLevel?
     var targetRecordID: String?     // may be nil of we're creating a new task
@@ -29,8 +30,12 @@ class TaskDetailsViewController: FormViewController {
                 self.navigationItem.leftBarButtonItem = leftButton
                 self.navigationItem.rightBarButtonItem = rightButton
                 self.task = createNewTaskInRealm(targetRealm: targetRealm!)
+            } else {
+                if self.targetRealm != nil && self.taskID != nil {
+                    self.task = targetRealm?.objects(Task.self).filter(NSPredicate(format: "id = %@", self.taskID!)).first
+                }
             }
-            form = self.createForm(task: task)
+            form = self.createForm(editable: self.newTaskMode, task: task)
         } else {
             self.showMissingRealmAlert()
         }
@@ -72,48 +77,54 @@ class TaskDetailsViewController: FormViewController {
      */
     func createForm(editable: Bool = false, task: Task?) -> Form {
         let form = Form()
-            form +++ TextRow("Task Title") { row in
-                row.tag = "Title"
-                row.value = task?.taskTitle
-                if editable == false {
-                    row.disabled = true
+        form +++ TextRow("Task Title") { row in
+            row.tag = "Title"
+            row.value = task?.taskTitle
+            if editable == false {
+                row.disabled = true
+            }
+            }.cellSetup { cell, row in
+                cell.textField.placeholder = row.tag
+            }.onChange({ (row) in
+                try! self.targetRealm?.write {
+                    task?.taskTitle = row.value ?? ""
                 }
-                }.cellSetup { cell, row in
-                    cell.textField.placeholder = row.tag
-                }
-                <<< TextAreaRow(){ row in
-                    editable == false ? row.disabled = true : ()
-                    row.tag = "Description"
-                    row.placeholder = "Task Description"
-                    row.textAreaHeight = .dynamic(initialTextViewHeight: 100)
-                    row.value = task?.taskDetails
-                }
-                
-                <<< DateRow(){ [weak self] row in
-                    editable == false ? row.disabled = true : ()
-                    
-                    row.title = "Due Date"
-                    row.value = Date()
-                    let formatter = DateFormatter()
-                    formatter.locale = .current
-                    formatter.dateStyle = .long
-                    row.dateFormatter = formatter
-                    
-                    if let task = self?.task {
-                        row.value = task.dueDate
+            })
+            
+            <<< TextAreaRow(){ row in
+                editable == false ? row.disabled = true : ()
+                row.tag = "Description"
+                row.placeholder = "Task Description"
+                row.textAreaHeight = .dynamic(initialTextViewHeight: 100)
+                row.value = task?.taskDetails
+                }.onChange({ (row) in
+                    try! self.targetRealm?.write {
+                        task?.taskDetails = row.value ?? ""
                     }
-                    }.onChange({ (row) in
-                        try! self.targetRealm?.write {
-                            task?.dueDate = row.value
-                        }
-                    })
+                })
+            
+            <<< DateRow(){ [weak self] row in
+                editable == false ? row.disabled = true : ()
+                
+                row.title = "Due Date"
+                row.value = Date()
+                let formatter = DateFormatter()
+                formatter.locale = .current
+                formatter.dateStyle = .long
+                row.dateFormatter = formatter
+                row.value = task?.dueDate
+                }.onChange({ (row) in
+                    try! self.targetRealm?.write {
+                        task?.dueDate = row.value ?? nil
+                    }
+                })
         if self.editMode == true && (self.accessLevel != nil && (self.accessLevel! == .write || self.accessLevel! == .admin)) {
             form +++ ButtonRow() { row in
                 row.title = NSLocalizedString("Delete Task", comment: "Delete")
-            }.onCellSelection({ (cell, row) in
-                self.confirmDelteTask(sender: self)
-            })
-
+                }.onCellSelection({ (cell, row) in
+                    self.confirmDelteTask(sender: self)
+                })
+            
         }
         
         return form
