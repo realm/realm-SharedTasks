@@ -112,6 +112,17 @@ extension SyncAccessLevel {
     }
 }
 
+extension SyncPermissionValue {
+    func decode(peopleRealm: Realm) -> String {
+        var rv = ""
+        if let person = peopleRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", self.userId!)).first {
+            rv = "\(person.fullName()) (\(self.userId!)) has \(self.accessLevel.toText()) to the Realm at \(self.path)\n"
+        } else {
+            rv = "\(self.userId!) has \(self.accessLevel.toText()) to the Realm at \(self.path)\n"
+        }
+        return rv
+    }
+}
 
 class TaskManagerViewController: FormViewController {
     
@@ -436,6 +447,10 @@ class TaskManagerViewController: FormViewController {
                 return
             }
             self.myPermissions = permissions
+            print("Permissions updated:")
+            permissions!.forEach({ (perm) in
+                print("\(perm.decode(peopleRealm: self.commonRealm))")
+            })
             NotificationCenter.default.post(name: self.permissionsDidUpdateNotification, object: nil)
             DispatchQueue.main.async {
                 self.reloadUsersSection()
