@@ -1,6 +1,6 @@
 //
 //  TaskManagerViewController.swift
-//  AsyncOpenTester
+//  SharedTasks
 //
 //  Created by David Spector on 6/9/17.
 //  Copyright © 2017 Realm. All rights reserved.
@@ -147,7 +147,6 @@ class TaskManagerViewController: FormViewController {
     
     
     override func viewWillAppear(_ animated: Bool) {
-        self.getPermissions()
         self.setupPeopleNotification()
         self.setupTasksNotification()
         self.reloadTaskSection()
@@ -327,7 +326,7 @@ class TaskManagerViewController: FormViewController {
                                 }
                             } else {
                                 // if we can't determine the permission level, then it's assumed to be .none
-                                //print("self.myPermissions was nil - cannot determine Access level.")
+                                print("self.myPermissions was nil - cannot determine Access level.")
                                 row.disabled = true
                                 row.title = "\(person.fullName())"
                             }
@@ -437,8 +436,10 @@ class TaskManagerViewController: FormViewController {
                 return
             }
             self.myPermissions = permissions
-            //NotificationCenter.default.post(name: self.permissionsDidUpdateNotification, object: nil)
-            self.reloadUsersSection()
+            NotificationCenter.default.post(name: self.permissionsDidUpdateNotification, object: nil)
+            DispatchQueue.main.async {
+                self.reloadUsersSection()
+            }
         }
     }
     

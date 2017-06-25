@@ -51,7 +51,6 @@ class AOTesterLoginViewController: UIViewController {
                                 self.setPermissionForRealm(realm, accessLevel: .write, personID: "*" )  // we, as an admin are granting global read/write to the common realm
                             }
                             
-                            
                             Realm.Configuration.defaultConfiguration = commonRealmConfig(user:SyncUser.current!)
                             let commonRealm =  try! Realm()
                             if let profileRecord = commonRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", SyncUser.current!.identity!)).first {
