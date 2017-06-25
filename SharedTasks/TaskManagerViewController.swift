@@ -84,7 +84,7 @@ extension SyncPermissionResults {
         var rv: SyncAccessLevel = .none
         
         for permission in self {
-            if permission.userId == userID && realmPath == permission.path {
+            if permission.userId! == userID && permission.path == realmPath {
                 rv = permission.accessLevel
             }
         }
@@ -158,6 +158,8 @@ class TaskManagerViewController: FormViewController {
     
     
     override func viewWillAppear(_ animated: Bool) {
+        self.getPermissions() // ger permsissions again to catch the case where we are returning from either a some other view controller
+
         self.setupPeopleNotification()
         self.setupTasksNotification()
         self.reloadTaskSection()
