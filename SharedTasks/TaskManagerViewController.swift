@@ -248,7 +248,7 @@ class TaskManagerViewController: FormViewController {
             
             +++ Section("App Actions")
             <<< ButtonRow(){ row in
-                row.title = NSLocalizedString("Set Permissions on My Tasks...", comment: "")
+                row.title = NSLocalizedString("Set Permissions on My Task List...", comment: "")
                 }.onCellSelection({ (sectionName, rowName) in
                     self.showPermissionSelector()
                 })
@@ -397,6 +397,8 @@ class TaskManagerViewController: FormViewController {
         return "unknown"
     }
     
+    
+    /// Take the user to the permissions mod view controller
     func showPermissionSelector() {
         // do something cool here
         performSegue(withIdentifier: Constants.kMainToPermissionsSegue, sender: self)
