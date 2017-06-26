@@ -13,6 +13,7 @@ import RealmSwift
 import Eureka
 import ImageRow
 import Alertift
+import PKHUD
 
 extension UIColor {
     
@@ -72,7 +73,6 @@ extension UIImage {
     }
 }
 
-
 extension SyncPermissionResults {
     /// get access level for a given user realm for a specificed path
     ///
@@ -80,11 +80,10 @@ extension SyncPermissionResults {
     ///   - userID: the target user identity string
     ///   - realmPath: the path of the realm
     /// - Returns: A SyncAccessLevel value
-    func accessLevelForUser(_ userID: String, realmPath: String) -> SyncAccessLevel {
+    func accessLevelForUser(_ targetUserID: String, realmPath: String) -> SyncAccessLevel {
         var rv: SyncAccessLevel = .none
-        
         for permission in self {
-            if permission.userId! == userID && permission.path == realmPath {
+            if permission.userId! == targetUserID && permission.path == realmPath {
                 rv = permission.accessLevel
             }
         }
@@ -115,8 +114,16 @@ extension SyncAccessLevel {
 extension SyncPermissionValue {
     func decode(peopleRealm: Realm) -> String {
         var rv = ""
+        var targetUserString: String?
+        
+        let targetUserId = self.path.replacingOccurrences(of: "MyTasks", with: "").replacingOccurrences(of: "/", with: "")
+        if let tmpTargetPerson = peopleRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", targetUserId)).first {
+            targetUserString = tmpTargetPerson.fullName()
+        }
+
+        
         if let person = peopleRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", self.userId!)).first {
-            rv = "\(person.fullName()) (\(self.userId!)) has \(self.accessLevel.toText()) to the Realm at \(self.path)\n"
+            rv = "\(person.fullName()) (\(self.userId!)) has \(self.accessLevel.toText()) to \(targetUserString != nil ? "\(targetUserString!)'s" : "") Realm at \(self.path)\n"
         } else {
             rv = "\(self.userId!) has \(self.accessLevel.toText()) to the Realm at \(self.path)\n"
         }
@@ -255,7 +262,7 @@ class TaskManagerViewController: FormViewController {
         self.reloadTaskSection()
         
         
-        self.form   +++ Section("User Task Lists - Tap to Switch Lists") { section in
+        self.form   +++ Section("User Task Lists (& your access) - Tap to Switch Lists") { section in
             section.tag = "Users"
         }
         self.reloadUsersSection()
@@ -287,8 +294,8 @@ class TaskManagerViewController: FormViewController {
                             row.title = task.taskTitle
                         })
                         .onCellSelection({ (cell, row) in
-                            let personId = self.currentRealm?.configuration.syncConfiguration?.user.identity!
-                            let accessLevel =  self.myPermissions?.accessLevelForUser(personId!, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: personId!))
+                            let personId = self.currentRealm?.configuration.syncConfiguration?.user.identity!   //the person ID of the realm we're checking access to...
+                            let accessLevel =  self.myPermissions?.accessLevelForUser(SyncUser.current!.identity!, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: personId!))
                             let dict = ["taskID": row.tag!, "accessLevel": accessLevel!] as [String : Any]
                             self.performSegue(withIdentifier: Constants.kViewtoDetailsSegue, sender: dict)
                         })
@@ -329,7 +336,7 @@ class TaskManagerViewController: FormViewController {
                             row.title = "\(person.fullName()) ← you!"   // do something to higlight our own record
                             row.disabled = true
                         } else {
-                            if let accessLevel =  self.myPermissions?.accessLevelForUser(person.id, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id)) {
+                            if let accessLevel =  self.myPermissions?.accessLevelForUser(SyncUser.current!.identity!, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id)) {
                                 //print("Access level is \(accessLevel.toText())")
                                 row.title = "\(person.fullName()) (\(accessLevel.toText()))"
                                 if (accessLevel == .write || accessLevel == .write) {
@@ -356,12 +363,23 @@ class TaskManagerViewController: FormViewController {
                     })
                     .onCellSelection({ (cell, row) in
                         print("tap on cell body for \(person.fullName())")
-                        //self.performSegue(withIdentifier: Constants.kRealmsToDetailsSegue, sender: self)
-                    }).onChange({ (row) in
-                        print("tap on cell UITableViewCellAccessoryType for \(person.fullName())")
+                        HUD.show(.progress)
+                        // @TODO - needs a swichtToReramForPersonID(person.Id)
+                        self.switchToRealmWithPath(Constants.myTasksRealmURL.absoluteString.replacingOccurrences(of: "~", with: person.id), completionHandler: { (realm, error) in
+                            if let realm = realm {
+                                self.currentRealm = realm
+                                DispatchQueue.main.async {
+                                    self.reloadTaskSection()
+                                }
+                            } else {
+                            if let error = error {
+                                print("An error occurred opening the Realm: \(error.localizedDescription) ")
+                                }
+                            }
+                            HUD.hide()
+                        })
+
                     })
-                
-                
             } // of people loop
         } // of section != nil
     } // of reloadUsersSection
@@ -409,6 +427,7 @@ class TaskManagerViewController: FormViewController {
     
     // MARK: - Realm Access Methods
     
+
     func openTasksForUser(_ user: SyncUser) {
         openTaskRealmForUser(user) { (realm, error) in
             if let realm = realm {
@@ -438,6 +457,14 @@ class TaskManagerViewController: FormViewController {
         } // of AsyncOpen
     }
     
+    
+    func switchToRealmWithPath(_ path:String, completionHandler: @escaping(Realm?, Error?) -> Void)  {
+        let teamURL = URL(string: path)
+        let config = Realm.Configuration(syncConfiguration: SyncConfiguration(user: SyncUser.current!, realmURL: teamURL!))
+        Realm.asyncOpen(configuration: config) { (realm, error) in
+            completionHandler(realm, error)
+        }
+    }
     
     
     // MARK: - Permission Hadling
