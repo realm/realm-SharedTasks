@@ -101,11 +101,11 @@ extension SyncAccessLevel {
         case .none:
             rv = "No Access"
         case .read:
-            rv = "Read Only Access"
+            rv = "Read-Only Access"
         case .write:
             rv = "Read/Write Access"
         case .admin:
-            rv = "Read/Write/Manage Access"
+            rv = "Admin"
         }
         return rv
     }
@@ -150,11 +150,12 @@ class TaskManagerViewController: FormViewController {
     override func viewDidLoad() {
         
         super.viewDidLoad()
-        NotificationCenter.default.addObserver(self, selector: #selector(TaskManagerViewController.reloadUsersSection), name: self.permissionsDidUpdateNotification, object: nil)
-        self.getPermissions()
-        people = commonRealm.objects(Person.self)       // all the people in the system
-        myPersonRecord = people?.filter(NSPredicate(format: "id = %@", SyncUser.current!.identity!)).first
         self.navigationItem.title = NSLocalizedString("Shared Tasks Demo", comment: "Shared Tasks Demo")
+
+        NotificationCenter.default.addObserver(self, selector: #selector(TaskManagerViewController.reloadUsersSection), name: self.permissionsDidUpdateNotification, object: nil)
+        self.getPermissions()                           // fire this off ASAP - might take a moment to complete
+        people = commonRealm.objects(Person.self)       // get all the people in the system
+        myPersonRecord = people?.filter(NSPredicate(format: "id = %@", SyncUser.current!.identity!)).first
         self.loadForm()
         
         
@@ -367,9 +368,12 @@ class TaskManagerViewController: FormViewController {
                         // @TODO - needs a swichtToReramForPersonID(person.Id)
                         self.switchToRealmWithPath(Constants.myTasksRealmURL.absoluteString.replacingOccurrences(of: "~", with: person.id), completionHandler: { (realm, error) in
                             if let realm = realm {
-                                self.currentRealm = realm
+                                self.currentRealm = realm // switch to the new realm...
+                                self.currentTaskNotificationToken?.stop() // stop tracking the old taks
+                                self.tasks = try! self.currentRealm?.objects(Task.self) // get the new tasks
+                                self.setupTasksNotification()   // and reset the tasks notification token
                                 DispatchQueue.main.async {
-                                    self.reloadTaskSection()
+                                    self.reloadTaskSection() // now redraw the sections
                                 }
                             } else {
                             if let error = error {
