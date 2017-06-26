@@ -256,6 +256,7 @@ class TaskManagerViewController: FormViewController {
                 }.onCellSelection({ (sectionName, rowName) in
                     self.handleLogoutPressed(sender: self)
                 })
+            
             +++ Section("My Tasks...") { section in
                 section.tag = "TaskSection"
         }
@@ -278,7 +279,6 @@ class TaskManagerViewController: FormViewController {
             if section.count > 0 {
                 section.removeAll()
             }
-            //section.header?.title = sectionTitleForUser(currentRealm?.configuration.syncConfiguration?.user)
             if self.currentRealm != nil {
                 let username = sectionTitleForUser(currentRealm?.configuration.syncConfiguration?.user) ?? "Unknown User"
                 section.header?.title = "\(username)'s Tasks..."
