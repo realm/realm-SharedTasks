@@ -10,6 +10,7 @@
 		1087168C89FBD652773B928C /* Pods_SharedTasks.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81911F8401158ABAB041BFF9 /* Pods_SharedTasks.framework */; };
 		62670885AA2383809FC9AB85 /* Pods_SharedTasksUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46E50FF44115FAAFC9A57A09 /* Pods_SharedTasksUITests.framework */; };
 		6E51F67805916700946A9560 /* Pods_SharedTasksTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69E10E03BC1CE3BEEF360A13 /* Pods_SharedTasksTests.framework */; };
+		8B1BDB011F019E22008A1566 /* UIImage+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B1BDB001F019E22008A1566 /* UIImage+Utils.swift */; };
 		8B3F124C1EFE550100BC0095 /* PermissionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B3F124B1EFE550100BC0095 /* PermissionsViewController.swift */; };
 		8B5864E51EFB421A0032D108 /* AOTesterLoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B5864D81EFB421A0032D108 /* AOTesterLoginViewController.swift */; };
 		8B5864E61EFB421A0032D108 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B5864D91EFB421A0032D108 /* AppDelegate.swift */; };
@@ -57,6 +58,7 @@
 		81911F8401158ABAB041BFF9 /* Pods_SharedTasks.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SharedTasks.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		83908661390CA8561AB32E33 /* Pods_AsyncOpenTesterUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AsyncOpenTesterUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B0F4BD51EEA1A20000CD325 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		8B1BDB001F019E22008A1566 /* UIImage+Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIImage+Utils.swift"; sourceTree = "<group>"; };
 		8B3F124B1EFE550100BC0095 /* PermissionsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PermissionsViewController.swift; sourceTree = "<group>"; };
 		8B5864D81EFB421A0032D108 /* AOTesterLoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AOTesterLoginViewController.swift; sourceTree = "<group>"; };
 		8B5864D91EFB421A0032D108 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 		8B9A97431EE0B2BC00F6C2CA = {
 			isa = PBXGroup;
 			children = (
+				8B1BDB001F019E22008A1566 /* UIImage+Utils.swift */,
 				8B0F4BD51EEA1A20000CD325 /* README.md */,
 				8B5864D71EFB421A0032D108 /* SharedTasks */,
 				8B9A974D1EE0B2BC00F6C2CA /* Products */,
@@ -485,6 +488,7 @@
 			files = (
 				8B6884F51EFC3A4B005921E5 /* TaskDetailsViewController.swift in Sources */,
 				8B5864E61EFB421A0032D108 /* AppDelegate.swift in Sources */,
+				8B1BDB011F019E22008A1566 /* UIImage+Utils.swift in Sources */,
 				8B5864EE1EFB421A0032D108 /* RealmUtils.swift in Sources */,
 				8B5864E51EFB421A0032D108 /* AOTesterLoginViewController.swift in Sources */,
 				8B5864EA1EFB421A0032D108 /* Constants.swift in Sources */,

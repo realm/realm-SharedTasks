@@ -31,47 +31,6 @@ extension UIColor {
         return newColor
     }
 }
-extension UIImage {
-    /// resize image to fit current frame
-    ///
-    /// - Parameters:
-    ///   - sourceSize: source imagesize
-    ///   - destRect: the cgSize of the desination
-    /// - Returns: return
-    func AspectScaleFit( sourceSize : CGSize,  destRect : CGRect) -> CGFloat  {
-        let destSize = destRect.size
-        let  scaleW = destSize.width / sourceSize.width
-        let scaleH = destSize.height / sourceSize.height
-        return fmin(scaleW, scaleH)
-    }
-    
-    /// resize the current iage
-    ///
-    /// - Parameter targetSize: the target size as a cgSize
-    /// - Returns: a new UIImage
-    func resizeImage(targetSize: CGSize) -> UIImage {
-        let size = self.size
-        
-        let widthRatio  = targetSize.width  / self.size.width
-        let heightRatio = targetSize.height / self.size.height
-        
-        var newSize: CGSize
-        if(widthRatio > heightRatio) {
-            newSize = CGSize(width:size.width * heightRatio, height:size.height * heightRatio)
-        } else {
-            newSize = CGSize(width:size.width * widthRatio,  height:size.height * widthRatio)
-        }
-        
-        let rect = CGRect(x:0, y:0, width: newSize.width, height: newSize.height)
-        
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-        self.draw(in: rect)
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return newImage!
-    }
-}
 
 extension SyncPermissionResults {
     /// get access level for a given user realm for a specificed path
@@ -525,7 +484,7 @@ class TaskManagerViewController: FormViewController {
         }
         
         if segue.identifier == Constants.kMainToPermissionsSegue {
-            
+            // nothing to do here - if you needed to poass something you;d do it here
         }
         
     }
@@ -545,14 +504,14 @@ class TaskManagerViewController: FormViewController {
                 break
             case .update(_, let deletions, let insertions, let modifications):
                 // Query results have changed, so apply them to the UITableView
-                tableView.beginUpdates()
-                tableView.insertRows(at: insertions.map({ IndexPath(row: $0, section: section!.index!) }),
-                                     with: .automatic)
-                tableView.deleteRows(at: deletions.map({ IndexPath(row: $0, section: section!.index!)}),
-                                     with: .automatic)
-                tableView.reloadRows(at: modifications.map({ IndexPath(row: $0, section: section!.index!) }),
-                                     with: .automatic)
-                tableView.endUpdates()
+                //tableView.beginUpdates()
+                //tableView.insertRows(at: insertions.map({ IndexPath(row: $0, section: section!.index!) }),
+                //                     with: .automatic)
+                //tableView.deleteRows(at: deletions.map({ IndexPath(row: $0, section: section!.index!)}),
+                //                     with: .automatic)
+                //tableView.reloadRows(at: modifications.map({ IndexPath(row: $0, section: section!.index!) }),
+                //                     with: .automatic)
+                //tableView.endUpdates()
                 section?.reload() // this forces Eureka to reload
                 break
             case .error(let error):
@@ -566,7 +525,6 @@ class TaskManagerViewController: FormViewController {
     
     
     func setupPeopleNotification() {
-        
         self.peopleNotificationToken =  self.people?.addNotificationBlock { (changes: RealmCollectionChange) in
             guard let tableView = self.tableView else { return }
             let section = self.form.sectionBy(tag: "Users")
@@ -578,14 +536,14 @@ class TaskManagerViewController: FormViewController {
                 break
             case .update(_, let deletions, let insertions, let modifications):
                 // Query results have changed, so apply them to the UITableView
-                tableView.beginUpdates()
-                tableView.insertRows(at: insertions.map({ IndexPath(row: $0, section: section!.index!) }),
-                                     with: .automatic)
-                tableView.deleteRows(at: deletions.map({ IndexPath(row: $0, section: section!.index!)}),
-                                     with: .automatic)
-                tableView.reloadRows(at: modifications.map({ IndexPath(row: $0, section: section!.index!) }),
-                                     with: .automatic)
-                tableView.endUpdates()
+                //tableView.beginUpdates()
+                //tableView.insertRows(at: insertions.map({ IndexPath(row: $0, section: section!.index!) }),
+                //                     with: .automatic)
+                //tableView.deleteRows(at: deletions.map({ IndexPath(row: $0, section: section!.index!)}),
+                //                     with: .automatic)
+                //tableView.reloadRows(at: modifications.map({ IndexPath(row: $0, section: section!.index!) }),
+                //                     with: .automatic)
+                //tableView.endUpdates()
                 section?.reload() // this forces Eureka to reload
                 break
             case .error(let error):
@@ -594,7 +552,7 @@ class TaskManagerViewController: FormViewController {
                 break
             }
         } // of notificationToken
-    } // setupTasksNotification
+    } // setupPeopleNotification
     
     
 }
