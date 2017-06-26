@@ -264,7 +264,7 @@ class TaskManagerViewController: FormViewController {
         self.reloadTaskSection()
         
         
-        self.form   +++ Section("User Task Lists (& your access) - Tap to Switch Lists") { section in
+        self.form   +++ Section("User Task Lists (& your access)\nTap to Switch Lists") { section in
             section.tag = "Users"
         }
         self.reloadUsersSection()
@@ -278,10 +278,13 @@ class TaskManagerViewController: FormViewController {
     func reloadTaskSection() {
         if let section = self.form.sectionBy(tag: "TaskSection") {
             if section.count > 0 {
+                self.currentTaskNotificationToken?.stop()
+                self.currentTaskNotificationToken = nil
                 section.removeAll()
             }
             if self.currentRealm != nil {
-                let username = sectionTitleForUser(currentRealm?.configuration.syncConfiguration?.user) ?? "Unknown User"
+                let targetUserID = currentRealm!.configuration.syncConfiguration!.realmURL.relativePath.replacingOccurrences(of: "MyTasks", with: "").replacingOccurrences(of: "/", with: "")
+                let username = self.fullNameForUserID(targetUserID) //sectionTitleForUser(currentRealm?.configuration.syncConfiguration?.user) ?? "Unknown User"
                 section.header?.title = "\(username)'s Tasks..."
             } else {
                 section.header?.title = "Tasks"
@@ -301,6 +304,7 @@ class TaskManagerViewController: FormViewController {
                             self.performSegue(withIdentifier: Constants.kViewtoDetailsSegue, sender: dict)
                         })
                 } // of tasks loop
+                self.setupTasksNotification()
             }
             
             section <<< ButtonRow(){ row in
@@ -309,7 +313,6 @@ class TaskManagerViewController: FormViewController {
                 }.onCellSelection({ (sectionName, rowName) in
                     self.performSegue(withIdentifier: Constants.kViewToNewTaskSegue, sender: self)
                 })
-            
         }
     }
     
@@ -317,7 +320,6 @@ class TaskManagerViewController: FormViewController {
     
     
     func reloadUsersSection() {
-        
         // we can get called by a notification on the availability of permissions... if we're not yet configured, just skip it.
         if self.form.isEmpty {
             return
@@ -338,7 +340,6 @@ class TaskManagerViewController: FormViewController {
                             row.disabled = true
                         } else {
                             if let accessLevel =  self.myPermissions?.accessLevelForUser(SyncUser.current!.identity!, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id)) {
-                                //print("Access level is \(accessLevel.toText())")
                                 row.title = "\(person.fullName()) (\(accessLevel.toText()))"
                                 if (accessLevel == .write || accessLevel == .write) {
                                     row.disabled = false
@@ -355,7 +356,6 @@ class TaskManagerViewController: FormViewController {
                         
                         // lastly, see if the putative path of the person we're looking at is the same as our path.. if so, it's us, so put a check on the row
                         if Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: (SyncUser.current?.identity!)!) == Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id) {
-                            //row.cell.accessoryType = .checkmark
                             cell.backgroundColor = UIColor.fromHex(hexString: "5190f8", alpha: 0.1)
                         } else {
                             //row.cell.accessoryType = .none
@@ -389,16 +389,13 @@ class TaskManagerViewController: FormViewController {
     } // of reloadUsersSection
     
     
-    /// get title for section based on curent user
-    ///
-    /// - Parameter user: A SyncUser
-    /// - Returns: A string prepresenting the current user and hte read/write status
-    func sectionTitleForUser(_ user:SyncUser?) ->String? {
-        let targetPersonRecord = self.commonRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", (user?.identity)!)).first
-        return targetPersonRecord?.fullName()
+    func fullNameForUserID(_ targetUserId: String) -> String {
+        //NB: if we are looking ar our own private realm the user ID string will be "~" so we have to turn that back into a usable ID 
+        if let tmpTargetPerson = self.commonRealm.objects(Person.self).filter(NSPredicate(format: "id = %@", (targetUserId != "~" ? targetUserId : SyncUser.current!.identity!))).first {
+            return tmpTargetPerson.fullName()
+        }
+        return "unknown"
     }
-    
-    
     
     func showPermissionSelector() {
         // do something cool here
