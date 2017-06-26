@@ -166,12 +166,11 @@ class TaskManagerViewController: FormViewController {
     
     
     override func viewWillAppear(_ animated: Bool) {
-        self.getPermissions() // ger permsissions again to catch the case where we are returning from either a some other view controller
-
-        self.setupPeopleNotification()
-        self.setupTasksNotification()
+        self.getPermissions() // ger permsissions again to catch the case where we are returning from either some other view controller
         self.reloadTaskSection()
         self.reloadUsersSection()
+        self.setupPeopleNotification()
+        self.setupTasksNotification()
     }
     
     
@@ -340,7 +339,7 @@ class TaskManagerViewController: FormViewController {
                             row.disabled = true
                         } else {
                             if let accessLevel =  self.myPermissions?.accessLevelForUser(SyncUser.current!.identity!, realmPath: Constants.myTasksRealmURL.relativePath.replacingOccurrences(of: "~", with: person.id)) {
-                                row.title = "\(person.fullName()) (\(accessLevel.toText()))"
+                                row.title = "\(person.fullName()) (You have \(accessLevel.toText()))"
                                 if (accessLevel == .write || accessLevel == .write) {
                                     row.disabled = false
                                 } else {
