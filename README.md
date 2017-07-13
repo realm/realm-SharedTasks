@@ -1,5 +1,7 @@
 ### Building Your First Multi-User Realm Mobile Platform iOS App
 
+## DRAFT - 12-July-2017
+
 This tutorial will guide you through the key elements of writing an iOS app writing a multi-user shared tasks using Realm in Swift.
 
 The rest of this tutorial will show you how to:
@@ -367,4 +369,4 @@ Realm supports 3 basic permissions: read-only, write (which includes 'read') and
 
 The Realm permssions API (as of Realm Cocoa version 2.8.3) suport the introspection of permissions for the current usder only -- this means that when logged in you can, in effect, ask the Realm Object Server  "_tell me what Realms I have been granted explicit access to, and what those access levels are_."
 
-What is returned is an array of Permission `SyncAccessLevel` objets that describe zero or or more Realms that some other user has granted the requesting user.   
+What is returned is an array of Permission `SyncAccessLevel` objets that describe zero or or more Realms that some other user has granted the requesting user.
