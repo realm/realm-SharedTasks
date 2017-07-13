@@ -1,5 +1,5 @@
 PODS:
-  - Alertift (1.3)
+  - Alertift (2.0)
   - Eureka (3.0.0)
   - Fakery (2.0.0)
   - ImageRow (2.0.0):
@@ -29,7 +29,7 @@ DEPENDENCIES:
   - RealmSwift
 
 SPEC CHECKSUMS:
-  Alertift: e9a2d1e31af55f8f44d4153d84fdf0f4657bad24
+  Alertift: 2b28b3ba3af73141390f329153f85aee9a56b2a8
   Eureka: f36fd440c3ebb7bfea0a4fbe6f16a05f1cb35906
   Fakery: 97b99c23937d2e025d9135c75e2b17351ccd5031
   ImageRow: 9dfbfa38c1e62c25d638bc40e97a48c1809443c4
@@ -41,4 +41,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: f8bec1133bb700bd2b6b440261a2b2e25a65fe1c
 
-COCOAPODS: 1.2.0
+COCOAPODS: 1.2.1
