@@ -7,7 +7,8 @@ This tutorial will guide you through the key elements of writing an iOS app writ
 The rest of this tutorial will show you how to:
   1. Setup a new Realm-based project from scratch using Cocoapods
   2. How to adopt and setup a free Realm utility module called `RealmLoginKit` which allows you to easily created multi-user ready applications with almost zero coding
-  3. How to create a simple Realm-based Task Manager that can interoperate with the fully-featured RealmTasks that comes with the Realm Mobile Platform distribution
+  3. Learn about the management and appliocaiton of permissions to Realms and how to intrpspect permissions for users.
+  4. How to create a simple Realm-based Task Manager that can interoperate with the fully-featured RealmTasks that comes with the Realm Mobile Platform distribution
 
 In order to successfuly complete this tutorial you will need a Macintosh running macOS 10.12 or later, as well as a copy of Xcode 8.2.3 or later.
 
