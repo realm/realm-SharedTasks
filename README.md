@@ -363,6 +363,8 @@ The remainder of this tutorial will cover some of the salient points surrounding
 
 ### Checking a User's Permissions
 
-Realm supports 3 basic permissions: read-only, write (which includes 'read') and manage (which incliudes both read and write permissions). In addition wildcard permissions can be applied to a Realm to allow "all users" any of the above permissions.
+Realm supports 3 basic permissions: read-only, write (which includes 'read') and manage (which includes both read and write permissions). In addition wildcard permissions can be applied to a Realm to allow "all users" any of the above permissions.
 
-The Realm permssions API (as of Realm Cocoa version 2.8.3) suport the introspection of permissions for the current usder onwly -- tis menas that when logged in you can, in effect, ask the Realm Object Server  "_tell me what Realms I have been granted explicit access to, and what those access levels are_."
+The Realm permssions API (as of Realm Cocoa version 2.8.3) suport the introspection of permissions for the current usder only -- this means that when logged in you can, in effect, ask the Realm Object Server  "_tell me what Realms I have been granted explicit access to, and what those access levels are_."
+
+What is returned is an array of Permission `SyncAccessLevel` objets that describe zero or or more Realms that some other user has granted the requesting user.   
