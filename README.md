@@ -187,10 +187,9 @@ Click the stop button to terminate the app, and we will continue with the rest o
 ## 6. Create the Models and Constants Class File
 In this step we are going to create a few constants to help us manage our Realm as well as the class models our Realm will operate on.
 
-From the Project Navigator, right click and select `New File` and when the file selector apprears select `Swift File` and name the file `ConstantsAndModels` and press preturn.  Xcode will create a new Swift file and open it in the editor.
+From the Project Navigator, right click and select `New File` and when the file selector apprears select `Swift File` and name the file `Constants` and press preturn.  Xcode will create a new Swift file and open it in the editor.
 
-Our first task will be to create some contants that will make opeing and working with Realms easier, then we will define the Task models.  o do this add the following code to the f
-
+Our first task will be to create some contants that will make opening and working with Realms easier, then we will define the Task models.
 
 Let's start with the Contants; add the following  to the file:
 
@@ -231,7 +230,7 @@ struct Constants {
 
 }
 
-// this propbably could be put in a sytand-alone utilites file... but this is just a debugging demo. soo.......
+// this propbably could be put in a stand-alone utilites file, but htese are such small utils we can keep them here.
 func commonRealmConfig(user: SyncUser) -> Realm.Configuration  {
     let config = Realm.Configuration(syncConfiguration: SyncConfiguration(user: user, realmURL: Constants.commonRealmURL), objectTypes: [Person.self])
     return config
