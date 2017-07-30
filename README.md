@@ -373,3 +373,5 @@ The Realm permssions API (as of Realm Cocoa version 2.8.3) suport the introspect
 What is returned is an array of Permission `SyncAccessLevel` objects that describe zero or or more Realms that some other user has granted the currnet, requesting user.
 
 In order to get the permssions for the current user, a user must be logged in (which means the `SyncUser.current` property isn't nil).
+
+![analytics](https://ga-beacon.appspot.com/UA-50247013-2/realm-SharedTasks/README?pixel)
