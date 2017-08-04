@@ -436,8 +436,8 @@ Setting permissions on an Realm is very simple; you need to know is the user ide
 
 ```swift
 let permission = SyncPermissionValue(realmPath: realmPath,  // The remote Realm path on which to apply the changes
-                                     userID: anotherUserID, // The user ID for which these permission changes should be applied
-                                     accessLevel: .write)   // The access level to be granted
+userID: anotherUserID, // The user ID for which these permission changes should be applied
+accessLevel: .write)   // The access level to be granted
 user.applyPermission(permission) { error in
   if let error = error {
     // handle error
@@ -466,6 +466,11 @@ It is also worth noting that if a user revokes your permissions, their Realm and
 
 <center><img src="/Graphics/SharedTasks-SetPermissions.png"  width="310" height="552" /><br/>Setting Permissions</center><br/>
 
+Allowing another user to access your private Realm is as easy as selecting the user and then a permission level, and then creating/firing a permission change request.
+
+Remove a permission is the same call, just with the appropriate permission flags unset. The changes from your perspective happen immediately, and will be propagated to the targeted users when they are online.
+
+### A Vew at the Realm Level
 A composite view of how these "shared-private-Realms" work together can be seen here, using the [Realm Browser](https://itunes.apple.com/us/app/realm-browser/id1007457278?mt=12):
 
 <center> <img src="/Graphics/SharedTaks-Browser.png"  width="50%" height="50%" /></center>
