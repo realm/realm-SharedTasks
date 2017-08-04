@@ -478,4 +478,4 @@ A composite view of how these "shared-private-Realms" work together can be seen 
 In this image the iPhone portion screenshot shows the task created by the user "David" while the Realm Browser shows both David's and "Worker 2"'s private Realms showing the task content and the fact that the task show (the "late Sumer party" task) resides in the domain of "Worker2" (id = *f6002d41fd2c72752f0d41f9891844a5*) but was in fact created by user "David" (id = *1a7332940598a2d6349ad414d31daf11*).
 
 # Conclusion
-As you will see in the downloaded application, the Realm permission system is very simple yet can be used to create by dynamic behaviors in you applications, even vey complete sharing  systems that don't require
+As you will see in the downloaded application, the Realm permission system is very simple yet can be used to create dynamic behaviors in your applications, even complex peer-to-peer like sharing data systems that don't require a central set of shared data models.
