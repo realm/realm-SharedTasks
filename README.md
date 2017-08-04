@@ -358,11 +358,11 @@ The basic interaction model is shown here:
 
 <center> <img src="/Graphics/SharedRealms.png"  width="50%" height="50%" /></center><br/>
 
-This model takes advantage of the Realm Object Server in an interesting way: it causes the server to sync Realms _between devices_, rather than causing all devices to synchronize with a  common database for these tasks (the common Realm here is used for user profiles). One could write a shares tasks lists using a common Realm but it would have the disadvantage of causing all tasks to sync with all users of the system.  This is both wasteful in terms of bandwidth, but it also guarantees that completely released users will have each others tasks on their devices... which even if the app were coded to now show these users each other's tasks, would represent a pretty poor application and security design. 
+This model takes advantage of the Realm Object Server in an interesting way: it causes the server to sync Realms _between devices_, rather than causing all devices to synchronize with a  common database for these tasks (the common Realm here is used for user profiles). One could write a shares tasks lists using a common Realm but it would have the disadvantage of causing all tasks to sync with all users of the system.  This is both wasteful in terms of bandwidth, but it also guarantees that completely released users will have each others tasks on their devices... which even if the app were coded to now show these users each other's tasks, would represent a pretty poor application and security design.
 
 This model works because every user has a Realm path that represents not a shared Realm, but a private directory on their device.  This is where applications typically put information that doesn't need to be shared with all other users.  However this Realm is no different than other Realms, and if it is opened by another user -- with the right access/permissions -- the Realm server will sync these "private" user Realms. You can thing of this as a "shared-private-Realm."
 
-Iplementing this functionality is quite easy, it's all about managing the permissions on the Realm. 
+Iplementing this functionality is quite easy, it's all about managing the permissions on the Realm.
 
 ### Checking a User's Permissions
 
@@ -453,7 +453,7 @@ Note, unless your account is an admin level account -- which means that you have
 
 
 # Permission Changes in Action
-The SharedTasks app is implemented as a (mostly) single view application.  The main content (user profile, and tasks-list view) are all in a single view. 
+The SharedTasks app is implemented as a (mostly) single view application.  The main content (user profile, and tasks-list view) are all in a single view.
 
 Task creation and the viewing and/or setting permissions for other users is another utility view pushed in as needed.
 
@@ -480,3 +480,15 @@ In this image the iPhone portion screenshot shows the task created by the user "
 
 # Conclusion
 As you will see in the downloaded application, the Realm permission system is very simple yet can be used to create dynamic behaviors in your applications, even complex peer-to-peer like sharing data systems that don't require a central set of shared data models.
+
+
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
+
+This project adheres to the [Contributor Covenant Code of Conduct](https://realm.io/conduct/). By participating, you are expected to uphold this code. Please report unacceptable behavior to [info@realm.io](mailto:info@realm.io).
+
+## License
+
+Distributed under the Apache 2.0 license. See [LICENSE](LICENSE) for more information.
