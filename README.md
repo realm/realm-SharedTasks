@@ -388,6 +388,7 @@ In order to get the permissions for the current user, a user must be logged in (
 
 ```
 
+## Exploring Permissions with Extensions
 As mentioned previously, permission objects (`SyncPermissionValue`) themselves are structures that contain the actual permission access values (`SyncAccessLevel`). These structures can be introspected and then reasoned about, but they are, at first blush rather opaque.  The SharedTasks app includes a coulee of convenience extensions to the Realm permissions system to help developers examine and work with them more easily.  For example, we can define extensions to help decode a permission value and even print out a human-readable string that can be use to display these values in an application's UI:
 ```swift
 extension SyncPermissionResults {
