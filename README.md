@@ -1,19 +1,16 @@
-### Building Your First Multi-User Realm Mobile Platform iOS App
-
-## DRAFT - 12-July-2017
+# Building Your First Multi-User Realm Mobile Platform iOS App
 
 This tutorial will guide you through the key elements of writing an iOS app that demonstrates a multi-user shared tasks using Realm in Swift.
 
 The rest of this tutorial will show you how to:
   1. Setup a new Realm-based project from scratch using Cocoapods
   2. How to adopt and setup a free Realm utility module called `RealmLoginKit` which allows you to easily created multi-user ready applications with almost zero coding
-  3. Learn about the management and application of permissions to Realms and how to intropspect permissions for users.
-  4. Demostrate how to implement a sharing system using the user's private Realm file by manipulating permissions to ensbling syncing of data without using a central shared Realm.
+  3. Learn about the management and application of permissions to Realms and how to introspect permissions for users.
+  4. Show the basics of how to implement a sharing system using the user's private Realm file by manipulating permissions to enabling syncing of data without using a central shared Realm.
 
+The bulk of this tutorial will cover some of the salient points surrounding managing Realms, and retrieval of and application of permissions to Realms to allow the sharing of tasks between users.  The fully implemented version of the application source code is too long to capture in a tutorial (and would be very tedious and error prone to type in); a completed version of the Realm SharedTasks application can be downloaded from the the following URL:  [https://github.com/realm-demos/realm-SharedTasks](https://github.com/realm-demos/realm-SharedTasks)
 
-The bulk of this tutorial will cover some of the salient points surrounding managing Realms, and retreival of and application of permissions to Realms to alow the sharing of tasks between users.  The fully implemented version of the application source code is too long to capture in a tutorial (and would be very tedious and error prone to type in); a completed verson of the Realm SharedTasks application can be downloaded from the the following URL:  [https://github.com/realm-demos/realm-SharedTasks](https://github.com/realm-demos/realm-SharedTasks)
-
-In order to successfuly complete this tutorial you will need a Macintosh running macOS 10.12 or later, as well as a copy of Xcode 8.2.3 or later.
+In order to successfully complete this tutorial you will need a Macintosh running macOS 10.12 or later, as well as a copy of Xcode 8.2.3 or later.
 
 First, [install the MacOS bundle](get-started/installation/mac) if you haven't yet. This will get you set up with the Realm Mobile Platform including a local copy of the Realm Object Server.
 
@@ -41,7 +38,7 @@ In this section we set up the Cocoapod dependency manager and add Realm's Swift 
 2. If you have not already done so, install the [Cocoapods system](https://cocoapods.org/)
 	 - Full details are available via the Cocopods site, but the simplest instructions are to type ``sudo gem install cocoapods`` in a terminal window
 3. Initialize a new Cocoapods Podfile with ```pod init```  A new file called `Podfile` will be created.
-4. Edit the Podfile,  find the the comment line that reads:
+4. Edit the Podfile,  find the comment line that reads:
 
   ` # Pods for MultiUserRealmTasksTutorial`
 	 And add the following after this line:
@@ -54,8 +51,8 @@ In this section we set up the Cocoapod dependency manager and add Realm's Swift 
 5. Save the file
 6. At the terminal, type `pod install` - this will cause the Cocoapods system to fetch the RealmSwift and RealmLoginKit modules, as well as create a new Xcode workspace file which enabled these modules to be used in this project.
 
-## 3. Setting up the Application Delegate
-In this seciton we will configure the applicaiton degelgate to support a Navigation controller. From the Project Navigator, double-clock the AppDelegate.swift file and edit the file to replace the `func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions` method with the following:
+## 3. Setting Up the Application Delegate
+In this section we will configure the application delegate to support a Navigation controller. From the Project Navigator, double-clock the AppDelegate.swift file and edit the file to replace the `func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions` method with the following:
 
 ```swift
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -87,7 +84,7 @@ In this section we will set up our login and main view controller's storyboard c
 
 Once you have added the second view controller, you will need to connect the two controllers by a pair of segues, as well as add class names/storyboard IDs for each controller to prepare for the code will be adding in the next sections:
 
-1. Open the storyboard propery viewer to see the ourline view of the contents of both controllers in the sotoryboard. Then, control-drag from the TasksLoginViewController label to the Table View Controller label and select "show" when the popup menu appears. Select the segue that is created between the two controllers, and set the name of ther segue in the property view on the right side to "loginToTasksViewSegue"
+1. Open the storyboard property viewer to see the outline view of the contents of both controllers in the storyboard. Then, control-drag from the TasksLoginViewController label to the Table View Controller label and select "show" when the popup menu appears. Select the segue that is created between the two controllers, and set the name of the segue in the property view on the right side to "loginToTasksViewSegue"
 
 2. Do the same from the `TasksLoginViewController` back to the `TasksLoginViewController`.  Here, again, tap the newly created segue (it will be the diagonal line) and name this segue "tasksViewToLoginControllerSegue"
 
@@ -98,7 +95,7 @@ Once you have added the second view controller, you will need to connect the two
 <center> <img src="/Graphics/MUTasks-StoryBoardSetup.gif" /></center></br>
 
 
-The final configfuration will look like this:
+The final configuration will look like this:
 
 <center> <img src="/Graphics/final-storyboard-config.png" /></center>
 
@@ -108,7 +105,7 @@ The final configfuration will look like this:
 In this section we will rename and then configure the TasksLoginViewController that will allow you to log in an existing user account, or create a new account
 
 
-1. Open the  `view controller` file in the project naivator. Click once on it to enable editing of the file name; change the name to `TasksLoginViewController` and press return to rename the file.
+1. Open the  `view controller` file in the project navigator. Click once on it to enable editing of the file name; change the name to `TasksLoginViewController` and press return to rename the file.
 
 2. Clicking on the filename should also have opened the newly renamed file in the editor. Here too you should replace all references to `ViewController` in the comments and class name with `TasksLoginViewController`
 
@@ -185,11 +182,11 @@ Click the stop button to terminate the app, and we will continue with the rest o
 ## 6. Create the Models and Constants Class File
 In this step we are going to create a few constants to help us manage our Realm as well as the class models our Realm will operate on.
 
-From the Project Navigator, right click and select `New File` and when the file selector apprears select `Swift File` and name the file `Constants` and press preturn.  Xcode will create a new Swift file and open it in the editor.
+From the Project Navigator, right click and select `New File` and when the file selector appears select `Swift File` and name the file `Constants` and press return.  Xcode will create a new Swift file and open it in the editor.
 
-Our first task will be to create some contants and access functions that will make opening and working with Realms easier, then we will define the Task models.
+Our first task will be to create some constants and access functions that will make opening and working with Realms easier, then we will define the Task models.
 
-Let's start with the Contants; add the following  to the file:
+Let's start with the Constants; add the following  to the file:
 
 ```swift
 //
@@ -246,9 +243,9 @@ func privateTasksRealmConfigforUser(_ user: SyncUser) -> Realm.Configuration  {
 
 ```
 
-There key things to note here are how the constants are layered together to create a set of accessors that allow you to quickly and easily create references to a Realm.  This example shows a single Realm but in more complex projects one could imagine having a number of such accessors created for a number of special purpose Realms.
+The key things to note here are how the constants are layered together to create a set of accessors that allow you to quickly and easily create references to a Realm.  This example shows a single Realm but in more complex projects one could imagine having a number of such accessors created for a number of special purpose Realms.
 
-Next, we'll add the definitions of our models.  Note that there are two kinds of models here: the Task and taskList models.
+Next, we'll add the definitions of our models.  Note that there are three kinds of models here: the Task and taskList models, and a Person oil that represents metadata about users in the system.  This makes it easy to figure out who is who, without having to know people's numeric user IDs. You will also notice there are several utility methods on these Realm model classes to make the management of these objects easier.
 
 ```swift
 //
@@ -341,31 +338,101 @@ class Task : Object {
 } // of Task
 
 ```
-Bot that the Person model isn't strictly required for our application - authenication is taken care of by the Realm Object Server itself - these models however do alow us to create a profile type object that links together the Realm User identity and some useful metadata that make it easier for the application's users to see whom they are dealing with whnr the decide to share information in their taks lists with other users.   *Note*: As of Realm Cocoa version 2.9.x the basic user info stored in the Realm username/password system is exposed so a dedicated Person model could be dispensed with; however we will continue using our cusotm model since it provides a complete example of how to integrate and epanded user meta-data model into an application.
+Bot that the Person model isn't strictly required for our application - authentication is taken care of by the Realm Object Server itself - these models however do allow us to create a profile type object that links together the Realm User identity and some useful metadata that make it easier for the application's users to see whom they are dealing with whnr the decide to share information in their tasks lists with other users.   *Note*: As of Realm Cocoa version 2.9.x the basic user info stored in the Realm username/password system is exposed so a dedicated Person model could be dispensed with; however we will continue using our custom model since it provides a complete example of how to integrate and expanded user metadata model into an application.
 
 At this point, we've created a login system, and defined the data models (`Task` and `Person`) that we'll use to represent our data.
 
 Your app should still build and run.
 
 
-## 7. Fleshing Out the Application - Permissions, Users and realms
+## 7. Fleshing Out the Application - Permissions, Users and Realms
 
-The fully implemented version of the application source code is too long to capture here in a tutorial (and would be very tedious and error prone to type in.  The remainder of this tutorial will cover some of the salient points surrounding managing Realms, and retreival of and application of permissions to Realms to alow the sharing of tasks between users; a completed verson of the Realm SharedTasks application can be downloaded from the the following URL:  [https://github.com/realm-demos/realm-SharedTasks](https://github.com/realm-demos/realm-SharedTasks)
+The fully implemented version of the application source code is too long to capture here in a tutorial (and would be very tedious and error prone to type in).  The remainder of this tutorial will cover some of the salient points surrounding managing Realms, and retrieval of and application of permissions to Realms to allow the sharing of tasks between users; a completed version of the Realm SharedTasks application can be downloaded from the the following URL:  [https://github.com/realm-demos/realm-SharedTasks](https://github.com/realm-demos/realm-SharedTasks)
+
+
+# The SharedTasks Model
+
+The SharedTasks model is simple: the basic idea is that each user has a collection of tasks in a list; their list can be either private -- it's only accessible using their own account, or it can be shared with one or more other users. Other users can be granted either read-only or read-write access. These access permissions can be changed at any time.
+
+The basic interaction model is shown here:
+
+<center> <img src="/Graphics/SharedRealms.png"  width="50%" height="50%" /></center><br/>
+
+This model takes advantage of the Realm Object Server in an interesting way: it causes the server to sync Realms _between devices_, rather than causing all devices to synchronize with a  common database for these tasks (the common Realm here is used for user profiles). One could write a shares tasks lists using a common Realm but it would have the disadvantage of causing all tasks to sync with all users of the system.  This is both wasteful in terms of bandwidth, but it also guarantees that completely released users will have each others tasks on their devices... which even if the app were coded to now show these users each other's tasks, would represent a pretty poor application and security design. 
+
+This model works because every user has a Realm path that represents not a shared Realm, but a private directory on their device.  This is where applications typically put information that doesn't need to be shared with all other users.  However this Realm is no different than other Realms, and if it is opened by another user -- with the right access/permissions -- the Realm server will sync these "private" user Realms. You can thing of this as a "shared-private-Realm."
+
+Iplementing this functionality is quite easy, it's all about managing the permissions on the Realm. 
 
 ### Checking a User's Permissions
 
 Realm supports 3 basic permissions: read-only, write (which includes 'read') and manage (which allows the enabled user to change all permissions on other Realm). In addition wildcard permissions can be applied to a Realm to allow "all users" any of the above permissions.
 
-The Realm permssions API (as of Realm Cocoa version 2.9.1) suport the introspection of permissions for the current user -- this means that when logged in you can, in effect, ask the Realm Object Server  "_tell me what Realms I have been granted explicit access to, and what those access levels are_."
+The Realm permissions API (as of Realm Cocoa version 2.9.1) supports the introspection of permissions for the current user -- this means that when logged in you can, in effect, ask the Realm Object Server  "_tell me what Realms I have been granted explicit access to, and what those access levels are_."
 
-What is returned is an array of Permission `SyncAccessLevel` objects that describe zero or or more Realms that some other user has granted the currnet, requesting user.
+What is returned is an array of Permission `SyncAccessLevel` objects that describe zero or or more Realms that some other user has granted the current, requesting user.
 
-In order to get the permssions for the current user, a user must be logged in (which means the `SyncUser.current` property isn't nil).
+In order to get the permissions for the current user, a user must be logged in (which means the `SyncUser.current` property isn't nil). The call is always relative to the current user, as in:
+```swift
+        SyncUser.current?.retrievePermissions { permissions, error in
+            if let error = error {
+                print("Error retreiving permissions: \(error.localizedDescription)")
+                return
+            }
+            self.myPermissions = permissions
+            print("Permissions updated:")
+            permissions!.forEach({ (perm) in
+                print("\(perm.decode(peopleRealm: self.commonRealm))")
+            })
+        }
+
+```
+
+As mentioned previously, permission objects (`SyncPermissionValue`) themselves are structures that contain the actual permission access values (`SyncAccessLevel`). These structures can be introspected and then reasoned about, but they are, at first blush rather opaque.  The SharedTasks app includes a coulee of convenience extensions to the Realm permissions system to help developers examine and work with them more easily.  For example, we can define extensions to help decode a permission value and even print out a human-readable string that can be use to display these values in an application's UI:
+```swift
+extension SyncPermissionResults {
+/// get access level for a given user realm for a specificed path
+///
+/// - Parameters:
+///   - userID: the target user identity string
+///   - realmPath: the path of the realm
+/// - Returns: A SyncAccessLevel value
+func accessLevelForUser(_ targetUserID: String, realmPath: String) -> SyncAccessLevel {
+    var rv: SyncAccessLevel = .none
+    for permission in self {
+        if permission.userId! == targetUserID && permission.path == realmPath {
+            rv = permission.accessLevel
+         }
+    }
+     return rv
+ }
+}
+
+extension SyncAccessLevel {
+/// Get human readable string for sync access level
+///
+/// - Returns: Simple description of acces level
+func toText() -> String {
+    var rv = "No Access"
+    switch (self) {
+    case .none:
+        rv = "No Access"
+    case .read:
+        rv = "Read-Only Access"
+    case .write:
+        rv = "Read/Write Access"
+    case .admin:
+        rv = "Admin"
+    }
+    return rv
+  }
+}
+```
 
 
 ### Setting permissions
 
-Setting permissions on an Realm is very simple; you need to know is the user identity (the `SyncUser.identy`) of the grantee and the parth to the Realm you wish to change the access permissions to:
+Setting permissions on an Realm is very simple; you need to know is the user identity (the `SyncUser.identy`) of the grantee and the path to the Realm you wish to change the access permissions to:
 
 ```swift
 let permission = SyncPermissionValue(realmPath: realmPath,  // The remote Realm path on which to apply the changes
@@ -379,16 +446,31 @@ user.applyPermission(permission) { error in
   // permission was successfully applied
 }
 ```
-The permsssion change is, like many Realm calls imeplementeed as a call back, so you will will be called-back at a later time with the results of change, or an error if the change could not be ipemented.
+The permission change is, like many Realm calls implemented as a call0back, so you will be called-back at a later time with the results of change, or an error if the change could not be implemented.
 
-Note, unless your acount is an admin level account -- which means that you have the admin flag set in the Realm Console of your Realm installation -- you will only be able to modify permissions on Realms you own dirdectly or one which your user id has been granted the `manage` permission.
+Note, unless your account is an admin level account -- which means that you have the admin flag set in the Realm Console of your Realm installation -- you will only be able to modify permissions on Realms you own directly or one which your user id has been granted the `manage` permission.
 
-# The SharedTasks Model
 
-The SharedTasks model is simple: the bacic idea is that each user has a collection of tasks in a list; their list can be either private -- it's only accessible sing their own account, or it cane be shared with one or more other users. Other users can be granted either read-inly or read-write access.
+# Permission Changes in Action
+The SharedTasks app is implemented as a (mostly) single view application.  The main content (user profile, and tasks-list view) are all in a single view. 
 
-The basic model is shown here:
+Task creation and the viewing and/or setting permissions for other users is another utility view pushed in as needed.
 
-<center> <img src="/Graphics/SharedRealms.png"  width="50%" height="50%" /></center><br/>
+<center> <img src="/Graphics/SharedTasks-Permissions.png"  width="310" height="552" /><br/>Shared Permissions</center><br/>&nbsp;&nbsp;
 
-This mode takes adavantage of the Realm Object Server in an intersting way: it causes the server to sync Realms _between devices_, rather than causibg all devices to use a shared common database. This
+Note that any user can only see the task list of users that have  granted them at least read-only access (this makes sense, if a given user's private Realm isn't in your list of permitted Realms, it is, effectively, invisible to you).
+
+It is also worth noting that if a user revokes your permissions, their Realm and its takes become invisible to you, but the content created in their private Realm by while you had access remains.
+
+<center><img src="/Graphics/NewTask.png"  width="310" height="552" /><br/>New Task View</center><br/>
+
+<center><img src="/Graphics/SharedTasks-SetPermissions.png"  width="310" height="552" /><br/>Setting Permissions</center><br/>
+
+A composite view of how these "shared-private-Realms" work together can be seen here, using the [Realm Browser](https://itunes.apple.com/us/app/realm-browser/id1007457278?mt=12):
+
+<center> <img src="/Graphics/SharedTaks-Browser.png"  width="50%" height="50%" /></center>
+
+In this image the iPhone portion screenshot shows the task created by the user "David" while the Realm Browser shows both David's and "Worker 2"'s private Realms showing the task content and the fact that the task show (the "late Sumer party" task) resides in the domain of "Worker2" (id = *f6002d41fd2c72752f0d41f9891844a5*) but was in fact created by user "David" (id = *1a7332940598a2d6349ad414d31daf11*).
+
+# Conclusion
+As you will see in the downloaded application, the Realm permission system is very simple yet can be used to create by dynamic behaviors in you applications, even vey complete sharing  systems that don't require
