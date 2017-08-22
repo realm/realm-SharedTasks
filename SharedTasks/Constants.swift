@@ -43,19 +43,23 @@ struct Constants {
     static let privateRealm                         = "MyTasks"
     static let ApplicationName                      = "SharedTasks"
 
+    // Start-Example: "RealmURL-Encoding"
     static let syncAuthURL                          = URL(string: "http://\(defaultSyncHost):9080")!
     static let syncServerURL                        = URL(string: "realm://\(defaultSyncHost):9080/\(ApplicationName)-\(syncRealmPath)")
     static let commonRealmURL                       = URL(string: "realm://\(defaultSyncHost):9080/\(ApplicationName)-CommonRealm")!
     
     static let myTasksRealmURL                      = URL(string: "realm://\(defaultSyncHost):9080/~/\(privateRealm)")!
-
+    // End-Example: "RealmURL-Encoding"
 }
 
 // this propbably could be put in a sytand-alone utilites file... but this is just a debugging demo. soo.......
+
+// Start-Example: "Realm-Accessor-Functions"
 func commonRealmConfig(user: SyncUser) -> Realm.Configuration  {
     let config = Realm.Configuration(syncConfiguration: SyncConfiguration(user: user, realmURL: Constants.commonRealmURL), objectTypes: [Person.self])
     return config
 }
+// End-Example: "Realm-Accessor-Functions"
 
 
 func privateTasksRealmConfigforUser(user: SyncUser) -> Realm.Configuration  {

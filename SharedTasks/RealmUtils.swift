@@ -26,7 +26,7 @@
 import Foundation
 import RealmSwift
 
-
+// Start-Example: "Setting-Permissions"
 func setPermissionForRealm(_ realm: Realm?, accessLevel: SyncAccessLevel, personID: String) {
     if let realm = realm {
         let permission = SyncPermissionValue(realmPath: realm.configuration.syncConfiguration!.realmURL.path,  // The remote Realm path on which to apply the changes
@@ -42,6 +42,7 @@ func setPermissionForRealm(_ realm: Realm?, accessLevel: SyncAccessLevel, person
         }
     }
 }
+// End-Example: "Setting-Permissions"
 
 
 

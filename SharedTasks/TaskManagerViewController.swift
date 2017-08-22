@@ -49,6 +49,7 @@ extension UIColor {
     }
 }
 
+// Start-Example: "Examine-Permission-Results"
 extension SyncPermissionResults {
     /// get access level for a given user realm for a specificed path
     ///
@@ -66,7 +67,9 @@ extension SyncPermissionResults {
         return rv
     }
 }
+// End-Example: "Examine-Permission-Results"
 
+// Start-Example: "Human-Readable-Access-string"
 extension SyncAccessLevel {
     /// Get human readable string for sync access level
     ///
@@ -86,6 +89,7 @@ extension SyncAccessLevel {
         return rv
     }
 }
+// End-Example: "Human-Readable-Access-string"
 
 extension SyncPermissionValue {
     func decode(peopleRealm: Realm) -> String {
